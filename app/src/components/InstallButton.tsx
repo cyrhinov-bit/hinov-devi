@@ -6,8 +6,16 @@ export function InstallButton() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Vérifie si l'app est déjà installée (ouverte en mode standalone)
-    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+    const isIos = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    };
+
+    const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    const isIosStandalone = (window.navigator as any).standalone === true;
+
+    // Vérifie si l'app est déjà installée
+    if (isStandalone || isIosStandalone) {
       setIsInstalled(true);
     }
 
@@ -19,6 +27,11 @@ export function InstallButton() {
 
     checkPrompt();
     window.addEventListener('pwa-install-ready', checkPrompt);
+
+    // Activer manuellement le bouton pour iOS (car Apple ne supporte pas l'installation automatique)
+    if (isIos() && !isStandalone && !isIosStandalone) {
+      setDeferredPrompt('ios');
+    }
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
@@ -35,6 +48,11 @@ export function InstallButton() {
   }, []);
 
   const handleInstallClick = async () => {
+    if (deferredPrompt === 'ios') {
+      alert("🍏 Pour installer sur iPhone/iPad :\n\n1. Appuyez sur l'icône 'Partager' (le carré avec la flèche vers le haut) en bas de l'écran de Safari.\n2. Faites défiler le menu et sélectionnez 'Sur l'écran d'accueil'.\n3. Confirmez en haut à droite.");
+      return;
+    }
+
     if (!deferredPrompt) {
       // Fallback manuel si le navigateur bloque le prompt automatique
       alert("L'installation automatique est bloquée par votre navigateur.\n\nPOUR INSTALLER MANUELLEMENT :\n1. Regardez tout à droite de votre barre d'adresse en haut.\n2. Cliquez sur la petite icône d'installation (un écran avec une flèche ou un '+' ).\n3. Ou bien, ouvrez le menu de votre navigateur (•••) puis choisissez 'Installer l'application'.");
