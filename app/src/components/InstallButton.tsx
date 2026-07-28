@@ -6,26 +6,29 @@ export function InstallButton() {
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setIsInstallable(true);
+    const checkPrompt = () => {
+      if ((window as any).deferredPWAInstallPrompt) {
+        setDeferredPrompt((window as any).deferredPWAInstallPrompt);
+        setIsInstallable(true);
+      }
     };
+
+    // Vérifier si l'événement a déjà eu lieu avant le chargement de React
+    checkPrompt();
+
+    // Sinon écouter l'événement custom que nous envoyons depuis index.html
+    window.addEventListener('pwa-install-ready', checkPrompt);
 
     const handleAppInstalled = () => {
-      // Clear prompt
       setDeferredPrompt(null);
       setIsInstallable(false);
+      (window as any).deferredPWAInstallPrompt = null;
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('pwa-install-ready', checkPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);

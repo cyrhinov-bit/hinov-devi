@@ -8,6 +8,14 @@
     <link rel="apple-touch-icon" href="/logoh.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>Hinov Devis</title>
+    <script>
+      window.deferredPWAInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPWAInstallPrompt = e;
+        window.dispatchEvent(new Event('pwa-install-ready'));
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
