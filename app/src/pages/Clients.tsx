@@ -17,6 +17,8 @@ export function Clients() {
         contact: newClient.contact || '',
         email: newClient.email || '',
         phone: newClient.phone || '',
+        company: newClient.company || '',
+        address: newClient.address || '',
         status: 'Actif'
       });
       setShowForm(false);

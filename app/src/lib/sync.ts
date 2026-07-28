@@ -4,7 +4,9 @@ import { supabase } from './supabase';
 
 export type SyncActionType = 'INSERT_CLIENT' | 'UPDATE_CLIENT' | 'DELETE_CLIENT' | 
                              'INSERT_QUOTE' | 'UPDATE_QUOTE' | 'DELETE_QUOTE' |
-                             'UPDATE_SETTINGS' | 'DELETE_PROFILE';
+                             'UPDATE_SETTINGS' | 'DELETE_PROFILE' |
+                             'INSERT_PRESTATION' | 'DELETE_PRESTATION' |
+                             'INSERT_SERVICE' | 'DELETE_SERVICE';
 
 export interface SyncAction {
   id: string;
@@ -147,6 +149,30 @@ export const processSyncQueue = async () => {
         }
         case 'DELETE_PROFILE': {
           const { error } = await supabase.from('profiles').delete().eq('id', action.payload.id);
+          success = !error;
+          break;
+        }
+        case 'INSERT_PRESTATION': {
+          const { error } = await supabase.from('prestations').insert([{
+            id: action.payload.id, code: action.payload.code, name: action.payload.name, description: action.payload.description, price: action.payload.price, service_id: action.payload.serviceId, unit: action.payload.unit
+          }]);
+          success = !error;
+          break;
+        }
+        case 'DELETE_PRESTATION': {
+          const { error } = await supabase.from('prestations').delete().eq('id', action.payload.id);
+          success = !error;
+          break;
+        }
+        case 'INSERT_SERVICE': {
+          const { error } = await supabase.from('services').insert([{
+            id: action.payload.id, name: action.payload.name, description: action.payload.description, members: action.payload.members
+          }]);
+          success = !error;
+          break;
+        }
+        case 'DELETE_SERVICE': {
+          const { error } = await supabase.from('services').delete().eq('id', action.payload.id);
           success = !error;
           break;
         }

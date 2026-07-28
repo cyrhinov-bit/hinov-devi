@@ -14,7 +14,8 @@ export function Services() {
       addService({
         id: Date.now().toString(),
         name: newService.name,
-        members: newService.members || 1
+        members: newService.members || 1,
+        description: newService.description || ''
       });
       setShowForm(false);
       setNewService({});

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Login.css';
 import logo from '../assets/logoh.png';
 import illustration from '../assets/login_illustration.png';
+import { InstallButton } from '../components/InstallButton';
 
 export function Login() {
   const { login, currentUser, loading } = useAuth();
@@ -98,6 +99,8 @@ export function Login() {
           <button type="submit" className="btn btn-primary login-btn">
             Se connecter
           </button>
+          
+          <InstallButton />
         </form>
       </div>
       </div>

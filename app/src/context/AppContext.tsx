@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/db';
@@ -6,12 +7,12 @@ import { queueSyncAction } from '../lib/sync';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface User { id: string; name: string; email: string; role: 'Directeur' | 'Responsable'; serviceId?: string; pin: string; lastLogin: string; }
-export interface Client { id: string; name: string; email: string; phone: string; contact: string; company: string; address: string; }
-export interface Service { id: string; name: string; description: string; }
-export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; }
+export interface Client { id: string; name: string; email: string; phone: string; contact: string; company: string; address: string; status?: string; }
+export interface Service { id: string; name: string; description: string; members?: number; }
+export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; unit?: string; }
 export interface QuoteLine { id: string; prestationId: string; description: string; quantity: number; unitPrice: number; total: number; }
 export interface Quote { id: string; quoteNumber: string; clientId: string; commercialId: string; subject: string; lines: QuoteLine[]; subtotal: number; vat: number; total: number; status: 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé'; date: string; style?: 'Classique' | 'Moderne' | 'Minimaliste'; accentColor?: string; }
-export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; }
+export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; address?: string; siret?: string; defaultVat?: number; defaultValidity?: number; }
 
 interface AppState {
   users: User[]; clients: Client[]; quotes: Quote[]; settings: AppSettings; services: Service[]; prestations: Prestation[]; loading: boolean;
@@ -20,10 +21,15 @@ interface AppState {
   deleteClient: (id: string) => Promise<void>;
   addQuote: (quote: Quote) => Promise<void>;
   updateQuote: (id: string, quote: Quote) => Promise<void>;
+  updateQuoteStatus: (id: string, status: Quote['status']) => Promise<void>;
   deleteQuote: (id: string) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<void>;
   addUser: (user: User) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
+  addPrestation: (prestation: Prestation) => Promise<void>;
+  deletePrestation: (id: string) => Promise<void>;
+  addService: (service: Service) => Promise<void>;
+  deleteService: (id: string) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -159,6 +165,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await queueSyncAction('UPDATE_QUOTE', newQuote);
   };
 
+  const updateQuoteStatus = async (id: string, status: Quote['status']) => {
+    const quote = quotes.find(q => q.id === id);
+    if (!quote) return;
+    const newQuote = { ...quote, status };
+    const newQuotes = quotes.map(q => q.id === id ? newQuote : q);
+    setQuotes(newQuotes);
+    await db.quotes.setItem('data', newQuotes);
+    await queueSyncAction('UPDATE_QUOTE', newQuote);
+  };
+
   const deleteQuote = async (id: string) => {
     const newQuotes = quotes.filter(q => q.id !== id);
     setQuotes(newQuotes);
@@ -170,6 +186,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings(newSettings);
     await db.settings.setItem('data', newSettings);
     await queueSyncAction('UPDATE_SETTINGS', newSettings);
+  };
+
+  const addPrestation = async (prestation: Prestation) => {
+    const newPrestations = [...prestations, { ...prestation, id: prestation.id.length > 20 ? prestation.id : uuidv4() }];
+    setPrestations(newPrestations);
+    await db.prestations.setItem('data', newPrestations);
+    await queueSyncAction('INSERT_PRESTATION', newPrestations[newPrestations.length - 1]);
+  };
+
+  const deletePrestation = async (id: string) => {
+    const newPrestations = prestations.filter(p => p.id !== id);
+    setPrestations(newPrestations);
+    await db.prestations.setItem('data', newPrestations);
+    await queueSyncAction('DELETE_PRESTATION', { id });
+  };
+
+  const addService = async (service: Service) => {
+    const newServices = [...services, { ...service, id: service.id.length > 20 ? service.id : uuidv4() }];
+    setServices(newServices);
+    await db.services.setItem('data', newServices);
+    await queueSyncAction('INSERT_SERVICE', newServices[newServices.length - 1]);
+  };
+
+  const deleteService = async (id: string) => {
+    const newServices = services.filter(s => s.id !== id);
+    setServices(newServices);
+    await db.services.setItem('data', newServices);
+    await queueSyncAction('DELETE_SERVICE', { id });
   };
 
   // Auth Users must generally be online to create accounts, so we hit Supabase immediately
@@ -197,7 +241,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, deleteQuote, updateSettings, addUser, deleteUser, refreshData }}>
+    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, updateQuoteStatus, deleteQuote, updateSettings, addUser, deleteUser, addPrestation, deletePrestation, addService, deleteService, refreshData }}>
       {children}
     </AppContext.Provider>
   );

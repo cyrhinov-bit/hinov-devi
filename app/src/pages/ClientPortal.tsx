@@ -48,7 +48,7 @@ export function ClientPortal() {
 
   return (
     <div 
-      className={`client-portal style-${quote.style.toLowerCase()}`}
+      className={`client-portal style-${(quote.style || 'classique').toLowerCase()}`}
       style={quote.accentColor ? { '--color-primary': quote.accentColor } as React.CSSProperties : {}}
     >
       {/* Admin Toolbar - Only visible if an employee is logged in */}

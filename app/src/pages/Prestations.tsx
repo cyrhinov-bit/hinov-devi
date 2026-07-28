@@ -17,7 +17,8 @@ export function Prestations() {
         name: newPrestation.name,
         serviceId: newPrestation.serviceId,
         price: Number(newPrestation.price),
-        unit: newPrestation.unit || 'Jour'
+        unit: newPrestation.unit || 'Jour',
+        description: newPrestation.description || ''
       });
       setShowForm(false);
       setNewPrestation({ unit: 'Jour' });
