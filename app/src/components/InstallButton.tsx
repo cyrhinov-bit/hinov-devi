@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Download, Loader } from 'lucide-react';
+
+type InstallState = 'idle' | 'installing' | 'installed';
 
 export function InstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [installState, setInstallState] = useState<InstallState>('idle');
 
   useEffect(() => {
-    const isIos = () => {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      return /iphone|ipad|ipod/.test(userAgent);
-    };
-
-    const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches;
     const isIosStandalone = (window.navigator as any).standalone === true;
 
-    // Vérifie si l'app est déjà installée
+    // Déjà installée — on n'affiche pas le bouton
     if (isStandalone || isIosStandalone) {
-      setIsInstalled(true);
+      setInstallState('installed');
+      return;
+    }
+
+    // iOS — afficher bouton avec guide manuel
+    if (isIos()) {
+      setDeferredPrompt('ios');
+      return;
     }
 
     const checkPrompt = () => {
@@ -28,57 +33,88 @@ export function InstallButton() {
     checkPrompt();
     window.addEventListener('pwa-install-ready', checkPrompt);
 
-    // Activer manuellement le bouton pour iOS (car Apple ne supporte pas l'installation automatique)
-    if (isIos() && !isStandalone && !isIosStandalone) {
-      setDeferredPrompt('ios');
-    }
-
+    // Déclenché même si l'utilisateur installe via le bouton natif du navigateur
     const handleAppInstalled = () => {
+      setInstallState('installed');
       setDeferredPrompt(null);
-      setIsInstalled(true);
       (window as any).deferredPWAInstallPrompt = null;
     };
-
     window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Écouter aussi le passage en mode standalone (installation réussie)
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setInstallState('installed');
+    };
+    mediaQuery.addEventListener('change', handleDisplayChange);
 
     return () => {
       window.removeEventListener('pwa-install-ready', checkPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      mediaQuery.removeEventListener('change', handleDisplayChange);
     };
   }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt === 'ios') {
-      alert("🍏 Pour installer sur iPhone/iPad :\n\n1. Appuyez sur l'icône 'Partager' (le carré avec la flèche vers le haut) en bas de l'écran de Safari.\n2. Faites défiler le menu et sélectionnez 'Sur l'écran d'accueil'.\n3. Confirmez en haut à droite.");
+      alert("🍏 Pour installer sur iPhone/iPad :\n\n1. Appuyez sur l'icône 'Partager' (le carré avec la flèche ↑) en bas de Safari.\n2. Faites défiler et sélectionnez 'Sur l'écran d'accueil'.\n3. Confirmez en haut à droite.");
       return;
     }
 
     if (!deferredPrompt) {
-      // Fallback manuel si le navigateur bloque le prompt automatique
-      alert("L'installation automatique est bloquée par votre navigateur.\n\nPOUR INSTALLER MANUELLEMENT :\n1. Regardez tout à droite de votre barre d'adresse en haut.\n2. Cliquez sur la petite icône d'installation (un écran avec une flèche ou un '+' ).\n3. Ou bien, ouvrez le menu de votre navigateur (•••) puis choisissez 'Installer l'application'.");
+      alert("Pour installer manuellement :\n1. Cliquez sur l'icône d'installation (📲) dans votre barre d'adresse.\n2. Ou ouvrez le menu (•••) → 'Installer l'application'.");
       return;
     }
-    
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (outcome === 'accepted') {
-      setIsInstalled(true);
+
+    setInstallState('installing');
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      (window as any).deferredPWAInstallPrompt = null;
+      if (outcome === 'accepted') {
+        setInstallState('installed');
+      } else {
+        setInstallState('idle');
+      }
+    } catch {
+      setInstallState('idle');
     }
   };
 
-  // Ne pas afficher le bouton si l'app est déjà installée
-  if (isInstalled) return null;
+  if (installState === 'installed') return null;
 
   return (
-    <button 
+    <button
       onClick={handleInstallClick}
+      disabled={installState === 'installing'}
       type="button"
       className="btn btn-outline"
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', marginTop: '16px', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        width: '100%',
+        marginTop: '16px',
+        borderColor: 'var(--color-primary)',
+        color: 'var(--color-primary)',
+        opacity: installState === 'installing' ? 0.7 : 1,
+        cursor: installState === 'installing' ? 'not-allowed' : 'pointer',
+        transition: 'opacity 0.2s ease',
+      }}
     >
-      <Download size={18} />
-      Installer l'Application (PWA)
+      {installState === 'installing' ? (
+        <>
+          <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+          Installation en cours…
+        </>
+      ) : (
+        <>
+          <Download size={18} />
+          Installer l'Application (PWA)
+        </>
+      )}
     </button>
   );
 }
