@@ -3,25 +3,26 @@ import { Download } from 'lucide-react';
 
 export function InstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    // Vérifie si l'app est déjà installée (ouverte en mode standalone)
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
     const checkPrompt = () => {
       if ((window as any).deferredPWAInstallPrompt) {
         setDeferredPrompt((window as any).deferredPWAInstallPrompt);
-        setIsInstallable(true);
       }
     };
 
-    // Vérifier si l'événement a déjà eu lieu avant le chargement de React
     checkPrompt();
-
-    // Sinon écouter l'événement custom que nous envoyons depuis index.html
     window.addEventListener('pwa-install-ready', checkPrompt);
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
-      setIsInstallable(false);
+      setIsInstalled(true);
       (window as any).deferredPWAInstallPrompt = null;
     };
 
@@ -34,23 +35,22 @@ export function InstallButton() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // Fallback manuel si le navigateur bloque le prompt automatique
+      alert("L'installation automatique est bloquée par votre navigateur.\n\nPOUR INSTALLER MANUELLEMENT :\n1. Regardez tout à droite de votre barre d'adresse en haut.\n2. Cliquez sur la petite icône d'installation (un écran avec une flèche ou un '+' ).\n3. Ou bien, ouvrez le menu de votre navigateur (•••) puis choisissez 'Installer l'application'.");
+      return;
+    }
     
-    // Show the install prompt
     deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
-    
-    // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);
-    
     if (outcome === 'accepted') {
-      setIsInstallable(false);
+      setIsInstalled(true);
     }
   };
 
-  if (!isInstallable) return null;
+  // Ne pas afficher le bouton si l'app est déjà installée
+  if (isInstalled) return null;
 
   return (
     <button 
