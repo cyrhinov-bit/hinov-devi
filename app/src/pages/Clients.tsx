@@ -5,10 +5,13 @@ import { useConfirm } from '../components/ConfirmModal';
 import type { Client } from '../context/AppContext';
 
 export function Clients() {
-  const { clients, addClient, deleteClient } = useAppContext();
+  const { clients, addClient, updateClient, deleteClient } = useAppContext();
   const { confirm } = useConfirm();
   const [showForm, setShowForm] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+
   const [newClient, setNewClient] = useState<Partial<Client>>({});
+  const [editForm, setEditForm] = useState<Partial<Client>>({});
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,18 +24,48 @@ export function Clients() {
         phone: newClient.phone || '',
         company: newClient.company || '',
         address: newClient.address || '',
-        status: 'Actif'
+        status: newClient.status || 'Actif'
       });
       setShowForm(false);
       setNewClient({});
     }
   };
 
+  const startEdit = (client: Client) => {
+    setEditingClient(client);
+    setEditForm({
+      name: client.name,
+      contact: client.contact,
+      email: client.email,
+      phone: client.phone,
+      company: client.company || '',
+      address: client.address || '',
+      status: client.status || 'Actif'
+    });
+    setShowForm(false);
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+    updateClient(editingClient.id, {
+      ...editingClient,
+      name: editForm.name || '',
+      contact: editForm.contact || '',
+      email: editForm.email || '',
+      phone: editForm.phone || '',
+      company: editForm.company || '',
+      address: editForm.address || '',
+      status: editForm.status || 'Actif'
+    });
+    setEditingClient(null);
+  };
+
   return (
     <div className="dashboard">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h2>Gestion des Clients</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setEditingClient(null); }}>
           <Plus size={16} style={{ marginRight: '8px' }} /> Nouveau Client
         </button>
       </div>
@@ -53,6 +86,69 @@ export function Clients() {
         </div>
       )}
 
+      {editingClient && (
+        <div className="card" style={{ marginBottom: '24px', padding: '24px', borderLeft: '4px solid var(--color-primary)' }}>
+          <h3>Modifier le client : {editingClient.name || editingClient.contact}</h3>
+          <form onSubmit={handleSaveEdit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Nom de l'entreprise</label>
+              <input
+                className="table-input"
+                placeholder="Ex: HINOV SARL"
+                value={editForm.name || ''}
+                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Responsable / Contact *</label>
+              <input
+                className="table-input"
+                placeholder="Ex: Jean Dupont"
+                value={editForm.contact || ''}
+                required
+                onChange={e => setEditForm({ ...editForm, contact: e.target.value })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Adresse e-mail *</label>
+              <input
+                className="table-input"
+                type="email"
+                placeholder="Ex: contact@client.com"
+                value={editForm.email || ''}
+                required
+                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Téléphone *</label>
+              <input
+                className="table-input"
+                placeholder="Ex: +225 0700000000"
+                value={editForm.phone || ''}
+                required
+                onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Statut</label>
+              <select
+                className="table-input"
+                value={editForm.status || 'Actif'}
+                onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+              >
+                <option value="Actif">Actif</option>
+                <option value="Inactif">Inactif</option>
+              </select>
+            </div>
+            <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => setEditingClient(null)}>Annuler</button>
+              <button type="submit" className="btn btn-primary">Sauvegarder les modifications</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="card">
         <table className="data-table">
           <thead>
@@ -68,24 +164,29 @@ export function Clients() {
           <tbody>
             {clients.map(client => (
               <tr key={client.id}>
-                <td>{client.name}</td>
+                <td><strong>{client.name || '-'}</strong></td>
                 <td>{client.contact}</td>
                 <td>{client.email}</td>
                 <td>{client.phone}</td>
-                <td><span className={`badge-status ${client.status === 'Actif' ? 'bg-success' : 'bg-error'}`}>{client.status}</span></td>
+                <td><span className={`badge-status ${client.status === 'Actif' ? 'bg-success' : 'bg-error'}`}>{client.status || 'Actif'}</span></td>
                 <td>
-                  <button className="icon-button" style={{ color: 'var(--color-primary)' }}><Edit2 size={16} /></button>
-                  <button
-                    className="icon-button text-error"
-                    onClick={() => confirm({
-                      title: 'Supprimer le client',
-                      message: `Êtes-vous sûr de vouloir supprimer le client "${client.name}" ?`,
-                      confirmLabel: 'Supprimer',
-                      onConfirm: () => deleteClient(client.id)
-                    })}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button className="icon-button" style={{ color: 'var(--color-primary)' }} title="Modifier le client" onClick={() => startEdit(client)}>
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      className="icon-button text-error"
+                      title="Supprimer le client"
+                      onClick={() => confirm({
+                        title: 'Supprimer le client',
+                        message: `Êtes-vous sûr de vouloir supprimer le client "${client.name || client.contact}" ?`,
+                        confirmLabel: 'Supprimer',
+                        onConfirm: () => deleteClient(client.id)
+                      })}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
