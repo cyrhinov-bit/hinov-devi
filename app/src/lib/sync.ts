@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 
 export type SyncActionType = 'INSERT_CLIENT' | 'UPDATE_CLIENT' | 'DELETE_CLIENT' | 
                              'INSERT_QUOTE' | 'UPDATE_QUOTE' | 'DELETE_QUOTE' |
-                             'UPDATE_SETTINGS' | 'DELETE_PROFILE' |
+                             'UPDATE_SETTINGS' | 'UPDATE_PROFILE' | 'DELETE_PROFILE' |
                              'INSERT_PRESTATION' | 'DELETE_PRESTATION' |
                              'INSERT_SERVICE' | 'DELETE_SERVICE';
 
@@ -149,6 +149,13 @@ export const processSyncQueue = async () => {
             default_validity: action.payload.defaultValidity ?? null,
           }).eq('id', 1);
           if (error) console.error('[Sync] UPDATE_SETTINGS échoué :', error.message);
+          success = !error;
+          break;
+        }
+        case 'UPDATE_PROFILE': {
+          const { id, ...updateData } = action.payload;
+          const { error } = await supabase.from('profiles').update(updateData).eq('id', id);
+          if (error) console.error('[Sync] UPDATE_PROFILE échoué :', error.message);
           success = !error;
           break;
         }

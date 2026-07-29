@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import { Plus, Edit2, UserX } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Edit2, UserX, Power, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import type { User } from '../context/AppContext';
 
 export function Utilisateurs() {
-  const { users, services, addUser, deleteUser } = useAppContext();
+  const { users, services, addUser, updateUser, toggleUserStatus, deleteUser } = useAppContext();
   const [showForm, setShowForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
   const [newUser, setNewUser] = useState({ email: '', role: 'Responsable', serviceId: '', pin: '' });
+  const [editForm, setEditForm] = useState({ name: '', role: 'Responsable' as User['role'], serviceId: '' });
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +29,33 @@ export function Utilisateurs() {
       role: newUser.role as User['role'],
       serviceId: newUser.serviceId,
       pin: newUser.pin,
-      lastLogin: 'Jamais'
+      lastLogin: 'Jamais',
+      active: true,
     });
     setShowForm(false);
     setNewUser({ email: '', role: 'Responsable', serviceId: '', pin: '' });
+  };
+
+  const startEdit = (u: User) => {
+    setEditingUser(u);
+    setEditForm({ name: u.name, role: u.role, serviceId: u.serviceId || '' });
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    updateUser(editingUser.id, {
+      name: editForm.name,
+      role: editForm.role,
+      serviceId: editForm.serviceId,
+    });
+    setEditingUser(null);
+  };
+
+  const handleDelete = (u: User) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${u.name} (${u.email}) ? Cette action est irréversible.`)) {
+      deleteUser(u.id);
+    }
   };
 
   const getServiceName = (id?: string) => {
@@ -49,7 +75,7 @@ export function Utilisateurs() {
     <div className="dashboard">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h2>Gestion des Utilisateurs</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setEditingUser(null); }}>
           <Plus size={16} style={{ marginRight: '8px' }} /> Nouvel Utilisateur
         </button>
       </div>
@@ -68,7 +94,7 @@ export function Utilisateurs() {
               <input type="password" maxLength={6} pattern="\d{6}" className="table-input" value={newUser.pin} onChange={e => setNewUser({...newUser, pin: e.target.value.replace(/\D/g, '')})} placeholder="******" required />
             </div>
 
-            <select className="table-input" required value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
+            <select className="table-input" required value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as User['role'] })}>
               <option value="Responsable">Responsable</option>
               <option value="Directeur">Directeur</option>
             </select>
@@ -86,6 +112,39 @@ export function Utilisateurs() {
         </div>
       )}
 
+      {editingUser && (
+        <div className="card" style={{ marginBottom: '24px', padding: '24px', borderLeft: '4px solid var(--color-primary)' }}>
+          <h3>Modifier l'utilisateur : {editingUser.email}</h3>
+          <form onSubmit={handleSaveEdit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Nom complet *</label>
+              <input type="text" className="table-input" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} required />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Rôle *</label>
+              <select className="table-input" required value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value as User['role'] })}>
+                <option value="Responsable">Responsable</option>
+                <option value="Directeur">Directeur</option>
+              </select>
+            </div>
+
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Service associé</label>
+              <select className="table-input" value={editForm.serviceId} onChange={e => setEditForm({ ...editForm, serviceId: e.target.value })}>
+                <option value="">Sélectionner un service (Optionnel)</option>
+                {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+
+            <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => setEditingUser(null)}>Annuler</button>
+              <button type="submit" className="btn btn-primary">Sauvegarder les modifications</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="card">
         <table className="data-table">
           <thead>
@@ -93,6 +152,7 @@ export function Utilisateurs() {
               <th>Nom</th>
               <th>Email</th>
               <th>Rôle</th>
+              <th>Statut</th>
               <th>Service</th>
               <th>Dernière connexion</th>
               <th>Actions</th>
@@ -100,23 +160,50 @@ export function Utilisateurs() {
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id}>
-                <td>{u.name}</td>
+              <tr key={u.id} style={{ opacity: u.active !== false ? 1 : 0.6 }}>
+                <td><strong>{u.name}</strong></td>
                 <td>{u.email}</td>
                 <td><span className="badge-status" style={{ backgroundColor: getRoleColor(u.role) }}>{u.role}</span></td>
+                <td>
+                  {u.active !== false ? (
+                    <span className="badge-status bg-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle size={12} /> Actif
+                    </span>
+                  ) : (
+                    <span className="badge-status bg-error" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertTriangle size={12} /> Inactif
+                    </span>
+                  )}
+                </td>
                 <td>{getServiceName(u.serviceId)}</td>
                 <td>{u.lastLogin}</td>
                 <td>
-                  <button className="icon-button" style={{ color: 'var(--color-primary)' }}><Edit2 size={16} /></button>
-                  {u.role !== 'Directeur' && (
-                    <button className="icon-button text-error" onClick={() => deleteUser(u.id)}><UserX size={16} /></button>
-                  )}
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button className="icon-button" style={{ color: 'var(--color-primary)' }} title="Modifier" onClick={() => startEdit(u)}>
+                      <Edit2 size={16} />
+                    </button>
+                    {u.role !== 'Directeur' && (
+                      <>
+                        <button
+                          className="icon-button"
+                          style={{ color: u.active !== false ? '#ff9800' : '#4caf50' }}
+                          title={u.active !== false ? 'Désactiver le compte' : 'Activer le compte'}
+                          onClick={() => toggleUserStatus(u.id)}
+                        >
+                          <Power size={16} />
+                        </button>
+                        <button className="icon-button text-error" title="Supprimer" onClick={() => handleDelete(u)}>
+                          <UserX size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '24px' }}>Aucun utilisateur trouvé.</td>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '24px' }}>Aucun utilisateur trouvé.</td>
               </tr>
             )}
           </tbody>

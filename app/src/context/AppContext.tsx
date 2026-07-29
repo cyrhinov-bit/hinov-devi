@@ -6,7 +6,7 @@ import { db } from '../lib/db';
 import { queueSyncAction } from '../lib/sync';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface User { id: string; name: string; email: string; role: 'Directeur' | 'Responsable'; serviceId?: string; pin: string; lastLogin: string; }
+export interface User { id: string; name: string; email: string; role: 'Directeur' | 'Responsable'; serviceId?: string; pin: string; lastLogin: string; active: boolean; }
 export interface Client { id: string; name: string; email: string; phone: string; contact: string; company: string; address: string; status?: string; }
 export interface Service { id: string; name: string; description: string; members?: number; }
 export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; unit?: string; }
@@ -25,6 +25,8 @@ interface AppState {
   deleteQuote: (id: string) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<void>;
   addUser: (user: User) => Promise<void>;
+  updateUser: (id: string, data: Pick<User, 'name' | 'role' | 'serviceId'>) => Promise<void>;
+  toggleUserStatus: (id: string) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   addPrestation: (prestation: Prestation) => Promise<void>;
   deletePrestation: (id: string) => Promise<void>;
@@ -88,7 +90,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             role: p.role as User['role'],
             serviceId: p.service_id,
             pin: p.pin,
-            lastLogin: p.last_login
+            lastLogin: p.last_login,
+            active: p.active !== false, // true par défaut si null
           }));
           setUsers(parsedUsers); await db.profiles.setItem('data', parsedUsers);
         }
@@ -281,6 +284,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await db.profiles.setItem('data', newUsers);
   };
 
+  const updateUser = async (id: string, data: Pick<User, 'name' | 'role' | 'serviceId'>) => {
+    const newUsers = users.map(u => u.id === id ? { ...u, ...data } : u);
+    setUsers(newUsers);
+    await db.profiles.setItem('data', newUsers);
+    await queueSyncAction('UPDATE_PROFILE', { id, name: data.name, role: data.role, service_id: data.serviceId || null });
+  };
+
+  const toggleUserStatus = async (id: string) => {
+    const targetUser = users.find(u => u.id === id);
+    if (!targetUser) return;
+    const updatedActive = !targetUser.active;
+    const newUsers = users.map(u => u.id === id ? { ...u, active: updatedActive } : u);
+    setUsers(newUsers);
+    await db.profiles.setItem('data', newUsers);
+    await queueSyncAction('UPDATE_PROFILE', { id, active: updatedActive });
+  };
+
   const deleteUser = async (id: string) => {
     const newUsers = users.filter(u => u.id !== id);
     setUsers(newUsers);
@@ -289,7 +309,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, updateQuoteStatus, deleteQuote, updateSettings, addUser, deleteUser, addPrestation, deletePrestation, addService, deleteService, refreshData }}>
+    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, updateQuoteStatus, deleteQuote, updateSettings, addUser, updateUser, toggleUserStatus, deleteUser, addPrestation, deletePrestation, addService, deleteService, refreshData }}>
       {children}
     </AppContext.Provider>
   );

@@ -72,6 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false;
     }
     
+    // Check active status
+    const { data: profile } = await supabase.from('profiles').select('active').eq('id', data.user.id).single();
+    if (profile && profile.active === false) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      alert('Votre compte a été désactivé par le Directeur.');
+      return false;
+    }
+    
     // Update last_login
     await supabase.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', data.user.id);
     
