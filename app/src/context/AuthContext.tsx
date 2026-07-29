@@ -61,14 +61,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
-  const login = async (email: string, pin: string) => {
+  const login = async (emailInput: string, pinInput: string) => {
     setLoading(true);
+    const cleanEmail = emailInput.trim().toLowerCase();
+    const cleanPin = pinInput.trim();
+
     const { data, error } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password: pin 
+      email: cleanEmail, 
+      password: cleanPin 
     });
     
     if (error || !data.user) {
+      if (error) console.error('[AuthContext] Connexion échouée :', error.message);
       setLoading(false);
       return false;
     }

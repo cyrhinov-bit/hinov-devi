@@ -13,6 +13,7 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -23,7 +24,10 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && pin) {
-      const success = await login(email, pin);
+      setError(false);
+      setIsSubmitting(true);
+      const success = await login(email.trim().toLowerCase(), pin.trim());
+      setIsSubmitting(false);
       if (success) {
         navigate('/', { replace: true });
       } else {
@@ -96,8 +100,8 @@ export function Login() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary login-btn">
-            Se connecter
+          <button type="submit" className="btn btn-primary login-btn" disabled={isSubmitting}>
+            {isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
           </button>
           
           <InstallButton />
