@@ -3,13 +3,17 @@ import { Plus, FileText, Download, Send, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { generateWhatsAppLink } from '../lib/sendUtils';
+import { SendModal } from '../components/SendModal';
+import type { Quote } from '../context/AppContext';
 
 export function Devis() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { quotes, clients, updateQuoteStatus, prestations } = useAppContext();
+  const { quotes, clients, settings, updateQuoteStatus, prestations } = useAppContext();
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [activeSendQuote, setActiveSendQuote] = useState<Quote | null>(null);
 
   const getClientName = (id: string) => clients.find(c => c.id === id)?.name || 'Inconnu';
 
@@ -36,32 +40,19 @@ export function Devis() {
     }
   };
 
-  const handleSend = (id: string) => {
-    updateQuoteStatus(id, 'Envoyé');
-    const portalUrl = `${window.location.origin}/portail-client/${id}`;
-    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client :\n${portalUrl}`);
+  const handleSend = (q: Quote) => {
+    setActiveSendQuote(q);
   };
 
-  const handleSendWhatsapp = (id: string, clientId: string) => {
-    const client = clients.find(c => c.id === clientId);
-    if (!client || !client.phone) {
-      alert("Ce client n'a pas de numéro de téléphone enregistré.");
+  const handleSendWhatsapp = (q: Quote) => {
+    const client = clients.find(c => c.id === q.clientId);
+    const { link, error } = generateWhatsAppLink(q, client, settings);
+    if (error) {
+      alert(error);
       return;
     }
-    
-    updateQuoteStatus(id, 'Envoyé');
-    const link = `${window.location.origin}/portail-client/${id}`;
-    const message = `Bonjour ${client.contact || client.name},\n\nVoici le lien vers votre devis : ${link}\n\nMerci de votre confiance.`;
-    
-    // Formater le numéro pour l'URL WhatsApp (garder uniquement les chiffres)
-    // Par défaut on ajoute l'indicatif +225 (Côte d'Ivoire) si non précisé
-    let phoneStr = client.phone.replace(/[^0-9+]/g, '');
-    if (!phoneStr.startsWith('+')) {
-      phoneStr = '+225' + phoneStr;
-    }
-    
-    const waLink = `https://wa.me/${phoneStr.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    window.open(waLink, '_blank');
+    updateQuoteStatus(q.id, 'Envoyé');
+    window.open(link, '_blank');
   };
 
   return (
@@ -119,10 +110,10 @@ export function Devis() {
                 <td><span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span></td>
                 <td>{q.date}</td>
                 <td>
-                  <button className="icon-button" style={{ color: 'var(--color-primary)' }} onClick={() => handleSend(q.id)} title="Envoyer par E-mail">
+                  <button className="icon-button" style={{ color: 'var(--color-primary)' }} onClick={() => handleSend(q)} title="Envoyer par E-mail">
                     <Send size={18} />
                   </button>
-                  <button className="icon-button" style={{ color: '#25D366' }} onClick={() => handleSendWhatsapp(q.id, q.clientId)} title="Envoyer par WhatsApp">
+                  <button className="icon-button" style={{ color: '#25D366' }} onClick={() => handleSendWhatsapp(q)} title="Envoyer par WhatsApp">
                     <MessageCircle size={18} />
                   </button>
                   <button className="icon-button" style={{ color: 'var(--color-primary)' }} onClick={() => navigate(`/portail-client/${q.id}`)} title="Voir le portail">
@@ -142,6 +133,19 @@ export function Devis() {
           </tbody>
         </table>
       </div>
+      {activeSendQuote && (
+        <SendModal
+          quote={activeSendQuote}
+          client={clients.find(c => c.id === activeSendQuote.clientId)}
+          settings={settings}
+          isOpen={!!activeSendQuote}
+          onClose={() => setActiveSendQuote(null)}
+          onSent={() => {
+            updateQuoteStatus(activeSendQuote.id, 'Envoyé');
+            setActiveSendQuote(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,8 +1,11 @@
+import React, { useState } from 'react';
 import { Download, Check, X, Send, MessageCircle, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm } from '../components/ConfirmModal';
+import { generateWhatsAppLink } from '../lib/sendUtils';
+import { SendModal } from '../components/SendModal';
 import './ClientPortal.css';
 
 export function ClientPortal() {
@@ -11,6 +14,7 @@ export function ClientPortal() {
   const { quotes, clients, settings, updateQuoteStatus } = useAppContext();
   const { currentUser } = useAuth();
   const { confirm } = useConfirm();
+  const [showSendModal, setShowSendModal] = useState(false);
 
   const quote = quotes.find(q => q.id === id);
 
@@ -37,27 +41,17 @@ export function ClientPortal() {
   };
 
   const handleSend = () => {
-    updateQuoteStatus(quote.id, 'Envoyé');
-    const portalUrl = `${window.location.origin}/portail-client/${quote.id}`;
-    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client :\n${portalUrl}`);
+    setShowSendModal(true);
   };
 
   const handleSendWhatsapp = () => {
-    if (!client || !client.phone) {
-      alert("Ce client n'a pas de numéro de téléphone enregistré.");
+    const { link, error } = generateWhatsAppLink(quote, client, settings);
+    if (error) {
+      alert(error);
       return;
     }
     updateQuoteStatus(quote.id, 'Envoyé');
-    const link = `${window.location.origin}/portail-client/${quote.id}`;
-    const message = `Bonjour ${client.contact || client.name},\n\nVoici le lien vers votre devis : ${link}\n\nMerci de votre confiance.`;
-    
-    let phoneStr = client.phone.replace(/[^0-9+]/g, '');
-    if (!phoneStr.startsWith('+')) {
-      phoneStr = '+225' + phoneStr;
-    }
-    
-    const waLink = `https://wa.me/${phoneStr.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    window.open(waLink, '_blank');
+    window.open(link, '_blank');
   };
 
   return (
@@ -236,6 +230,19 @@ export function ClientPortal() {
           </div>
         )}
       </main>
+      {showSendModal && (
+        <SendModal
+          quote={quote}
+          client={client}
+          settings={settings}
+          isOpen={showSendModal}
+          onClose={() => setShowSendModal(false)}
+          onSent={() => {
+            updateQuoteStatus(quote.id, 'Envoyé');
+            setShowSendModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

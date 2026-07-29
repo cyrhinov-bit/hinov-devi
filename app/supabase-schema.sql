@@ -115,6 +115,7 @@ CREATE POLICY "Lecture publique des profils" ON profiles FOR SELECT USING (true)
 
 -- Autoriser la lecture publique des devis, lignes, clients et paramètres (pour le Portail Client)
 CREATE POLICY "Lecture publique des devis" ON quotes FOR SELECT USING (true);
+CREATE POLICY "Mise a jour publique du statut des devis" ON quotes FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "Lecture publique des lignes" ON quote_lines FOR SELECT USING (true);
 CREATE POLICY "Lecture publique des clients" ON clients FOR SELECT USING (true);
 CREATE POLICY "Lecture publique des paramètres" ON settings FOR SELECT USING (true);
