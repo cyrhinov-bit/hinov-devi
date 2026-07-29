@@ -104,11 +104,24 @@ export function ClientPortal() {
       <main className="portal-container portal-main">
         <div className="card devis-document">
           <div className="devis-header">
-            <div className="company-info">
-              {settings.headerLogoBase64 && (
-                <img src={settings.headerLogoBase64} alt={settings.companyName} style={{ maxWidth: '200px', maxHeight: '80px', marginBottom: '16px', objectFit: 'contain' }} />
+            <div className="company-info" style={{ width: '100%' }}>
+              {settings.headerLogoBase64 ? (
+                <div style={{ width: '100%', marginBottom: '16px' }}>
+                  <img
+                    src={settings.headerLogoBase64}
+                    alt={settings.companyName}
+                    style={{
+                      width: '100%',
+                      maxHeight: '140px',
+                      objectFit: 'contain',
+                      objectPosition: 'left center',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </div>
+              ) : (
+                <h2>{settings.companyName}</h2>
               )}
-              {!settings.headerLogoBase64 && <h2>{settings.companyName}</h2>}
               <p>{settings.companyAddress}</p>
               <p>RCCM: {settings.companySiret}</p>
             </div>
