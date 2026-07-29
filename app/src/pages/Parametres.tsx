@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Save, Upload } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useConfirm } from '../components/ConfirmModal';
 
 export function Parametres() {
   const { settings, updateSettings } = useAppContext();
+  const { confirm } = useConfirm();
   const [localSettings, setLocalSettings] = useState(settings);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,8 +20,15 @@ export function Parametres() {
   };
 
   const handleSave = () => {
-    updateSettings(localSettings);
-    alert('Paramètres sauvegardés avec succès !');
+    confirm({
+      title: 'Enregistrer les paramètres',
+      message: 'Souhaitez-vous enregistrer les modifications apportées aux paramètres de l\'application ?',
+      confirmLabel: 'Enregistrer',
+      variant: 'info',
+      onConfirm: async () => {
+        await updateSettings(localSettings);
+      }
+    });
   };
 
   return (

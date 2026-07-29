@@ -2,6 +2,7 @@ import { Download, Check, X, Send, MessageCircle, ArrowLeft, AlertCircle } from 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../components/ConfirmModal';
 import './ClientPortal.css';
 
 export function ClientPortal() {
@@ -9,6 +10,7 @@ export function ClientPortal() {
   const navigate = useNavigate();
   const { quotes, clients, settings, updateQuoteStatus } = useAppContext();
   const { currentUser } = useAuth();
+  const { confirm } = useConfirm();
 
   const quote = quotes.find(q => q.id === id);
 
@@ -19,9 +21,19 @@ export function ClientPortal() {
   const client = clients.find(c => c.id === quote.clientId);
 
   const handleStatusChange = (status: 'Accepté' | 'Refusé' | 'Brouillon' | 'Envoyé') => {
-    updateQuoteStatus(quote.id, status);
-    // Ne rediriger que si l'utilisateur est un employé connecté (pas un client externe)
-    if (currentUser && status !== 'Envoyé') navigate('/devis');
+    const isAccept = status === 'Accepté';
+    confirm({
+      title: isAccept ? 'Accepter le devis' : 'Refuser le devis',
+      message: isAccept
+        ? 'Confirmez-vous l\'acceptation de ce devis ? Cette décision sera transmise immédiatement au prestataire.'
+        : 'Êtes-vous sûr de vouloir refuser ce devis ?',
+      confirmLabel: isAccept ? 'Accepter le devis' : 'Refuser le devis',
+      variant: isAccept ? 'success' : 'danger',
+      onConfirm: async () => {
+        await updateQuoteStatus(quote.id, status);
+        if (currentUser && status !== 'Envoyé') navigate('/devis');
+      }
+    });
   };
 
   const handleSend = () => {

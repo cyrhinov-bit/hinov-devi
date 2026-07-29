@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Trash2, CheckCircle2, Info, X } from 'lucide-react';
 import './ConfirmModal.css';
 
 interface ConfirmOptions {
@@ -8,7 +8,7 @@ interface ConfirmOptions {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'warning' | 'info';
+  variant?: 'danger' | 'warning' | 'info' | 'success';
   onConfirm: () => void | Promise<void>;
 }
 
@@ -44,6 +44,36 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getIcon = (variant?: ConfirmOptions['variant']) => {
+    switch (variant) {
+      case 'warning':
+        return <AlertTriangle size={24} />;
+      case 'info':
+        return <Info size={24} />;
+      case 'success':
+        return <CheckCircle2 size={24} />;
+      case 'danger':
+      default:
+        return <Trash2 size={24} />;
+    }
+  };
+
+  const getConfirmButtonStyle = (variant?: ConfirmOptions['variant']) => {
+    switch (variant) {
+      case 'warning':
+        return { backgroundColor: 'var(--color-warning)', color: '#fff' };
+      case 'info':
+        return { backgroundColor: 'var(--color-info)', color: '#fff' };
+      case 'success':
+        return { backgroundColor: 'var(--color-success)', color: '#fff' };
+      case 'danger':
+      default:
+        return { backgroundColor: 'var(--color-error)', color: '#fff' };
+    }
+  };
+
+  const variant = modalOptions?.variant || 'danger';
+
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
@@ -54,11 +84,11 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               <X size={18} />
             </button>
             <div className="confirm-modal-header">
-              <div className={`confirm-modal-icon variant-${modalOptions.variant || 'danger'}`}>
-                {modalOptions.variant === 'warning' ? <AlertTriangle size={24} /> : <Trash2 size={24} />}
+              <div className={`confirm-modal-icon variant-${variant}`}>
+                {getIcon(variant)}
               </div>
               <div>
-                <h3 className="confirm-modal-title">{modalOptions.title || 'Confirmation de suppression'}</h3>
+                <h3 className="confirm-modal-title">{modalOptions.title || 'Confirmation'}</h3>
               </div>
             </div>
 
@@ -71,12 +101,12 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 {modalOptions.cancelLabel || 'Annuler'}
               </button>
               <button
-                className={`btn ${modalOptions.variant === 'warning' ? 'btn-warning' : 'btn-primary'}`}
-                style={{ backgroundColor: modalOptions.variant === 'warning' ? 'var(--color-warning)' : 'var(--color-error)' }}
+                className="btn"
+                style={getConfirmButtonStyle(variant)}
                 onClick={handleConfirm}
                 disabled={loading}
               >
-                {loading ? 'Traitement...' : modalOptions.confirmLabel || 'Supprimer'}
+                {loading ? 'Traitement...' : modalOptions.confirmLabel || 'Confirmer'}
               </button>
             </div>
           </div>
