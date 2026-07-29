@@ -31,6 +31,7 @@ interface AppState {
   addPrestation: (prestation: Prestation) => Promise<void>;
   deletePrestation: (id: string) => Promise<void>;
   addService: (service: Service) => Promise<void>;
+  updateService: (id: string, service: Partial<Service>) => Promise<void>;
   deleteService: (id: string) => Promise<void>;
   refreshData: () => Promise<void>;
 }
@@ -230,6 +231,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await queueSyncAction('INSERT_SERVICE', newServices[newServices.length - 1]);
   };
 
+  const updateService = async (id: string, service: Partial<Service>) => {
+    const newServices = services.map(s => s.id === id ? { ...s, ...service } : s);
+    setServices(newServices);
+    await db.services.setItem('data', newServices);
+    await queueSyncAction('UPDATE_SERVICE', { id, name: service.name, description: service.description, members: service.members });
+  };
+
   const deleteService = async (id: string) => {
     const newServices = services.filter(s => s.id !== id);
     setServices(newServices);
@@ -310,7 +318,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, updateQuoteStatus, deleteQuote, updateSettings, addUser, updateUser, toggleUserStatus, deleteUser, addPrestation, deletePrestation, addService, deleteService, refreshData }}>
+    <AppContext.Provider value={{ users, clients, quotes, settings, services, prestations, loading, addClient, updateClient, deleteClient, addQuote, updateQuote, updateQuoteStatus, deleteQuote, updateSettings, addUser, updateUser, toggleUserStatus, deleteUser, addPrestation, deletePrestation, addService, updateService, deleteService, refreshData }}>
       {children}
     </AppContext.Provider>
   );

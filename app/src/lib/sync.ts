@@ -6,7 +6,7 @@ export type SyncActionType = 'INSERT_CLIENT' | 'UPDATE_CLIENT' | 'DELETE_CLIENT'
                              'INSERT_QUOTE' | 'UPDATE_QUOTE' | 'DELETE_QUOTE' |
                              'UPDATE_SETTINGS' | 'UPDATE_PROFILE' | 'DELETE_PROFILE' |
                              'INSERT_PRESTATION' | 'DELETE_PRESTATION' |
-                             'INSERT_SERVICE' | 'DELETE_SERVICE';
+                             'INSERT_SERVICE' | 'UPDATE_SERVICE' | 'DELETE_SERVICE';
 
 export interface SyncAction {
   id: string;
@@ -182,6 +182,13 @@ export const processSyncQueue = async () => {
             id: action.payload.id, name: action.payload.name, description: action.payload.description, members: action.payload.members
           }]);
           if (error) console.error('[Sync] INSERT_SERVICE échoué :', error.message);
+          success = !error;
+          break;
+        }
+        case 'UPDATE_SERVICE': {
+          const { id, ...updateData } = action.payload;
+          const { error } = await supabase.from('services').update(updateData).eq('id', id);
+          if (error) console.error('[Sync] UPDATE_SERVICE échoué :', error.message);
           success = !error;
           break;
         }
