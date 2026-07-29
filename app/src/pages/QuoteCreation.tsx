@@ -142,7 +142,7 @@ export function QuoteCreation() {
                   <td>
                     <input type="number" className="table-input" value={line.unitPrice} step="0.01" onChange={e => updateLine(idx, 'unitPrice', Number(e.target.value))} />
                   </td>
-                  <td>{line.total.toFixed(2)} €</td>
+                  <td>{line.total.toLocaleString('fr-FR')} FCFA</td>
                   <td>
                     <button className="icon-button text-error" onClick={() => handleRemoveLine(idx)}><Trash2 size={16} /></button>
                   </td>
@@ -187,15 +187,15 @@ export function QuoteCreation() {
         <div className="totals-section">
           <div className="total-row">
             <span>Sous-total HT</span>
-            <span>{subtotal.toFixed(2)} €</span>
+            <span>{subtotal.toLocaleString('fr-FR')} FCFA</span>
           </div>
           <div className="total-row">
             <span>TVA (20%)</span>
-            <span>{vat.toFixed(2)} €</span>
+            <span>{vat.toLocaleString('fr-FR')} FCFA</span>
           </div>
           <div className="total-row grand-total">
             <span>Total TTC</span>
-            <span>{total.toFixed(2)} €</span>
+            <span>{total.toLocaleString('fr-FR')} FCFA</span>
           </div>
         </div>
 

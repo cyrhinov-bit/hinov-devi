@@ -56,7 +56,7 @@ export function Parametres() {
               <input type="text" className="table-input" value={localSettings.companyName} onChange={e => setLocalSettings({...localSettings, companyName: e.target.value})} />
             </div>
             <div className="form-group">
-              <label>SIRET</label>
+              <label>RCCM</label>
               <input type="text" className="table-input" value={localSettings.companySiret} onChange={e => setLocalSettings({...localSettings, companySiret: e.target.value})} />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>

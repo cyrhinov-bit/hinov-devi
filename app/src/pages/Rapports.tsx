@@ -44,14 +44,14 @@ export function Rapports() {
               <td>124</td>
               <td>82</td>
               <td><span className="badge-status bg-success">66%</span></td>
-              <td>425 000 €</td>
+              <td>425 000 FCFA</td>
             </tr>
             <tr>
               <td>Marc Leroy</td>
               <td>85</td>
               <td>35</td>
               <td><span className="badge-status bg-warning">41%</span></td>
-              <td>215 000 €</td>
+              <td>215 000 FCFA</td>
             </tr>
           </tbody>
         </table>

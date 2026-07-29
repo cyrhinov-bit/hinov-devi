@@ -48,7 +48,7 @@ export function Prestations() {
               <option value="">Sélectionner un service...</option>
               {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
-            <input className="table-input" type="number" step="0.01" placeholder="Prix Unitaire (€)" required onChange={e => setNewPrestation({...newPrestation, price: parseFloat(e.target.value)})} />
+            <input className="table-input" type="number" step="0.01" placeholder="Prix Unitaire (FCFA)" required onChange={e => setNewPrestation({...newPrestation, price: parseFloat(e.target.value)})} />
             <select className="table-input" value={newPrestation.unit} onChange={e => setNewPrestation({...newPrestation, unit: e.target.value})}>
               <option value="Jour">Jour</option>
               <option value="Heure">Heure</option>
@@ -81,7 +81,7 @@ export function Prestations() {
                 <td>{p.code}</td>
                 <td>{p.name}</td>
                 <td>{getServiceName(p.serviceId)}</td>
-                <td>{p.price.toFixed(2)} €</td>
+                <td>{p.price.toLocaleString('fr-FR')} FCFA</td>
                 <td>{p.unit}</td>
                 <td>
                   <button className="icon-button" style={{ color: 'var(--color-primary)' }}><Edit2 size={16} /></button>

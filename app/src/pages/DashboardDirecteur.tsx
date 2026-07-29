@@ -45,7 +45,7 @@ export function DashboardDirecteur() {
           </div>
           <div className="widget-content">
             <div className="widget-label">VALEUR TOTALE</div>
-            <div className="widget-value">{totalValue.toLocaleString('fr-FR')} €</div>
+            <div className="widget-value">{totalValue.toLocaleString('fr-FR')} FCFA</div>
           </div>
         </div>
 
@@ -102,7 +102,7 @@ export function DashboardDirecteur() {
               <tr key={q.id}>
                 <td>{getClientName(q.clientId)}</td>
                 <td>{q.subject}</td>
-                <td>{q.subtotal.toFixed(2)} €</td>
+                <td>{q.subtotal.toLocaleString('fr-FR')} FCFA</td>
                 <td><span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span></td>
                 <td>{q.date}</td>
               </tr>

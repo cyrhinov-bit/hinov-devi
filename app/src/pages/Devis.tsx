@@ -115,7 +115,7 @@ export function Devis() {
                 <td>{q.quoteNumber}</td>
                 <td>{getClientName(q.clientId)}</td>
                 <td>{q.subject}</td>
-                <td>{q.subtotal.toFixed(2)} €</td>
+                <td>{q.subtotal.toLocaleString('fr-FR')} FCFA</td>
                 <td><span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span></td>
                 <td>{q.date}</td>
                 <td>

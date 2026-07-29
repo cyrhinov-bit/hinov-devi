@@ -98,7 +98,7 @@ export function ClientPortal() {
               )}
               {!settings.headerLogoBase64 && <h2>{settings.companyName}</h2>}
               <p>{settings.companyAddress}</p>
-              <p>SIRET: {settings.companySiret}</p>
+              <p>RCCM: {settings.companySiret}</p>
             </div>
             <div className="client-info">
               <h3>Devis N° {quote.quoteNumber}</h3>
@@ -126,8 +126,8 @@ export function ClientPortal() {
                       <strong>{line.description}</strong>
                     </td>
                     <td>{line.quantity}</td>
-                    <td>{line.unitPrice.toFixed(2)} €</td>
-                    <td>{line.total.toFixed(2)} €</td>
+                    <td>{line.unitPrice.toLocaleString('fr-FR')} FCFA</td>
+                    <td>{line.total.toLocaleString('fr-FR')} FCFA</td>
                   </tr>
                 ))}
               </tbody>
@@ -145,15 +145,15 @@ export function ClientPortal() {
             <div className="totals">
               <div className="total-row">
                 <span>Sous-total HT</span>
-                <span>{quote.subtotal.toFixed(2)} €</span>
+                <span>{quote.subtotal.toLocaleString('fr-FR')} FCFA</span>
               </div>
               <div className="total-row">
                 <span>TVA (20%)</span>
-                <span>{quote.vat.toFixed(2)} €</span>
+                <span>{quote.vat.toLocaleString('fr-FR')} FCFA</span>
               </div>
               <div className="total-row grand-total">
                 <span>Total TTC</span>
-                <span>{quote.total.toFixed(2)} €</span>
+                <span>{quote.total.toLocaleString('fr-FR')} FCFA</span>
               </div>
             </div>
           </div>
