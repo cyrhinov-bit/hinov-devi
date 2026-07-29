@@ -103,7 +103,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setPrestations(parsedPrestations); await db.prestations.setItem('data', parsedPrestations);
         }
         if (settingsData) {
-          const parsedSettings = { companyName: settingsData.company_name, companyLogo: settingsData.company_logo, companyAddress: settingsData.company_address, companySiret: settingsData.company_siret, companyTva: settingsData.company_tva, defaultTerms: settingsData.default_terms };
+          const parsedSettings: AppSettings = {
+            companyName: settingsData.company_name,
+            companyLogo: settingsData.company_logo,
+            companyAddress: settingsData.company_address,
+            companySiret: settingsData.company_siret,
+            companyTva: settingsData.company_tva,
+            defaultTerms: settingsData.default_terms,
+            headerLogoBase64: settingsData.header_logo_base64 ?? undefined,
+            defaultVat: settingsData.default_vat ?? undefined,
+            defaultValidity: settingsData.default_validity ?? undefined,
+          };
           setSettings(parsedSettings); await db.settings.setItem('data', parsedSettings);
         }
         if (quotesData) {

@@ -8,6 +8,7 @@ CREATE TABLE services (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
+    members INTEGER DEFAULT 1,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
@@ -31,6 +32,7 @@ CREATE TABLE clients (
     contact TEXT,
     company TEXT,
     address TEXT,
+    status TEXT DEFAULT 'Actif',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
@@ -41,6 +43,7 @@ CREATE TABLE prestations (
     name TEXT NOT NULL,
     description TEXT,
     price NUMERIC NOT NULL,
+    unit TEXT DEFAULT 'Jour',
     service_id UUID REFERENCES services(id) ON DELETE CASCADE
 );
 
@@ -52,7 +55,10 @@ CREATE TABLE settings (
     company_address TEXT,
     company_siret TEXT,
     company_tva TEXT,
-    default_terms TEXT
+    default_terms TEXT,
+    header_logo_base64 TEXT,
+    default_vat NUMERIC DEFAULT 20,
+    default_validity INTEGER DEFAULT 30
 );
 
 -- Table des devis

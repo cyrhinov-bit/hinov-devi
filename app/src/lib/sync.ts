@@ -48,6 +48,7 @@ export const processSyncQueue = async () => {
       switch (action.type) {
         case 'INSERT_CLIENT': {
           const { error } = await supabase.from('clients').insert([action.payload]);
+          if (error) console.error('[Sync] INSERT_CLIENT échoué :', error.message);
           success = !error;
           break;
         }
@@ -142,8 +143,12 @@ export const processSyncQueue = async () => {
             company_address: action.payload.companyAddress,
             company_siret: action.payload.companySiret,
             company_tva: action.payload.companyTva,
-            default_terms: action.payload.defaultTerms
+            default_terms: action.payload.defaultTerms,
+            header_logo_base64: action.payload.headerLogoBase64 ?? null,
+            default_vat: action.payload.defaultVat ?? null,
+            default_validity: action.payload.defaultValidity ?? null,
           }).eq('id', 1);
+          if (error) console.error('[Sync] UPDATE_SETTINGS échoué :', error.message);
           success = !error;
           break;
         }
@@ -156,6 +161,7 @@ export const processSyncQueue = async () => {
           const { error } = await supabase.from('prestations').insert([{
             id: action.payload.id, code: action.payload.code, name: action.payload.name, description: action.payload.description, price: action.payload.price, service_id: action.payload.serviceId, unit: action.payload.unit
           }]);
+          if (error) console.error('[Sync] INSERT_PRESTATION échoué :', error.message);
           success = !error;
           break;
         }
@@ -168,6 +174,7 @@ export const processSyncQueue = async () => {
           const { error } = await supabase.from('services').insert([{
             id: action.payload.id, name: action.payload.name, description: action.payload.description, members: action.payload.members
           }]);
+          if (error) console.error('[Sync] INSERT_SERVICE échoué :', error.message);
           success = !error;
           break;
         }
