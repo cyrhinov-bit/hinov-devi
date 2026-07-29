@@ -74,7 +74,7 @@ export function DashboardResponsable() {
               <td>L'équipe Globale</td>
               <td>{totalQuotes}</td>
               <td>{acceptedQuotes}</td>
-              <td>{quotes.reduce((sum, q) => sum + q.subtotal, 0).toLocaleString('fr-FR')} FCFA</td>
+              <td>{quotes.filter(q => q.status !== 'Refusé').reduce((sum, q) => sum + q.subtotal, 0).toLocaleString('fr-FR')} FCFA</td>
               <td><span className="badge-status bg-success">{acceptanceRate}%</span></td>
             </tr>
           </tbody>

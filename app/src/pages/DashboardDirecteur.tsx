@@ -6,7 +6,8 @@ export function DashboardDirecteur() {
   const { quotes, clients } = useAppContext();
 
   const totalQuotes = quotes.length;
-  const totalValue = quotes.reduce((acc, q) => acc + q.subtotal, 0);
+  // Ne comptabiliser dans le Chiffre d'Affaires / Valeur Totale que les devis non refusés (Accepté, Envoyé, Brouillon)
+  const totalValue = quotes.filter(q => q.status !== 'Refusé').reduce((acc, q) => acc + q.subtotal, 0);
   const acceptedQuotes = quotes.filter(q => q.status === 'Accepté').length;
   const toReviewQuotes = quotes.filter(q => q.status === 'Envoyé' || q.status === 'Brouillon').length;
 
