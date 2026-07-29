@@ -18,6 +18,7 @@ import { Login } from './pages/Login';
 
 import { AppProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ConfirmProvider } from './components/ConfirmModal';
 
 const queryClient = new QueryClient();
 
@@ -58,34 +59,36 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <Routes>
-              {/* Route publique de connexion */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/portail-client/:id" element={<ClientPortal />} />
+        <ConfirmProvider>
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <Routes>
+                {/* Route publique de connexion */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/portail-client/:id" element={<ClientPortal />} />
 
-              {/* Routes protégées */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<RoleBasedDashboard />} />
-                  
-                  <Route path="clients" element={<Clients />} />
-                  <Route path="services" element={<Services />} />
-                  <Route path="prestations" element={<Prestations />} />
-                  <Route path="devis" element={<Devis />} />
-                  <Route path="devis/nouveau" element={<QuoteCreation />} />
-                  <Route path="documents" element={<Documents />} />
-                  <Route path="utilisateurs" element={<Utilisateurs />} />
-                  <Route path="rapports" element={<Rapports />} />
-                  <Route path="parametres" element={<Parametres />} />
-                  
-                  <Route path="*" element={<div style={{ padding: '20px' }}><h1>Page introuvable</h1></div>} />
+                {/* Routes protégées */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<RoleBasedDashboard />} />
+                    
+                    <Route path="clients" element={<Clients />} />
+                    <Route path="services" element={<Services />} />
+                    <Route path="prestations" element={<Prestations />} />
+                    <Route path="devis" element={<Devis />} />
+                    <Route path="devis/nouveau" element={<QuoteCreation />} />
+                    <Route path="documents" element={<Documents />} />
+                    <Route path="utilisateurs" element={<Utilisateurs />} />
+                    <Route path="rapports" element={<Rapports />} />
+                    <Route path="parametres" element={<Parametres />} />
+                    
+                    <Route path="*" element={<div style={{ padding: '20px' }}><h1>Page introuvable</h1></div>} />
+                  </Route>
                 </Route>
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </QueryClientProvider>
+              </Routes>
+            </BrowserRouter>
+          </QueryClientProvider>
+        </ConfirmProvider>
       </AppProvider>
     </AuthProvider>
   );

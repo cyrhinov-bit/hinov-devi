@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useConfirm } from '../components/ConfirmModal';
 import type { Client } from '../context/AppContext';
 
 export function Clients() {
   const { clients, addClient, deleteClient } = useAppContext();
+  const { confirm } = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [newClient, setNewClient] = useState<Partial<Client>>({});
 
@@ -73,7 +75,17 @@ export function Clients() {
                 <td><span className={`badge-status ${client.status === 'Actif' ? 'bg-success' : 'bg-error'}`}>{client.status}</span></td>
                 <td>
                   <button className="icon-button" style={{ color: 'var(--color-primary)' }}><Edit2 size={16} /></button>
-                  <button className="icon-button text-error" onClick={() => deleteClient(client.id)}><Trash2 size={16} /></button>
+                  <button
+                    className="icon-button text-error"
+                    onClick={() => confirm({
+                      title: 'Supprimer le client',
+                      message: `Êtes-vous sûr de vouloir supprimer le client "${client.name}" ?`,
+                      confirmLabel: 'Supprimer',
+                      onConfirm: () => deleteClient(client.id)
+                    })}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))}

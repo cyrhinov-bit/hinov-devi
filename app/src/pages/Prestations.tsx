@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useConfirm } from '../components/ConfirmModal';
 import type { Prestation } from '../context/AppContext';
 
 export function Prestations() {
   const { prestations, services, addPrestation, deletePrestation } = useAppContext();
+  const { confirm } = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [newPrestation, setNewPrestation] = useState<Partial<Prestation>>({ unit: 'Jour' });
 
@@ -83,7 +85,17 @@ export function Prestations() {
                 <td>{p.unit}</td>
                 <td>
                   <button className="icon-button" style={{ color: 'var(--color-primary)' }}><Edit2 size={16} /></button>
-                  <button className="icon-button text-error" onClick={() => deletePrestation(p.id)}><Trash2 size={16} /></button>
+                  <button
+                    className="icon-button text-error"
+                    onClick={() => confirm({
+                      title: 'Supprimer la prestation',
+                      message: `Voulez-vous vraiment supprimer la prestation "${p.name}" (${p.code}) ?`,
+                      confirmLabel: 'Supprimer',
+                      onConfirm: () => deletePrestation(p.id)
+                    })}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))}

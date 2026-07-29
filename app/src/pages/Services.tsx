@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useConfirm } from '../components/ConfirmModal';
 import type { Service } from '../context/AppContext';
 
 export function Services() {
   const { services, users, addService, updateService, deleteService } = useAppContext();
+  const { confirm } = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
@@ -43,9 +45,12 @@ export function Services() {
   };
 
   const handleDelete = (service: Service) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le service "${service.name}" ?`)) {
-      deleteService(service.id);
-    }
+    confirm({
+      title: 'Supprimer le service',
+      message: `Êtes-vous sûr de vouloir supprimer le service "${service.name}" ? Cette action est définitive.`,
+      confirmLabel: 'Supprimer',
+      onConfirm: () => deleteService(service.id)
+    });
   };
 
   return (

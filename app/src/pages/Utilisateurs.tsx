@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, UserX, Power, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useConfirm } from '../components/ConfirmModal';
 import type { User } from '../context/AppContext';
 
 export function Utilisateurs() {
   const { users, services, addUser, updateUser, toggleUserStatus, deleteUser } = useAppContext();
+  const { confirm } = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -53,9 +55,12 @@ export function Utilisateurs() {
   };
 
   const handleDelete = (u: User) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${u.name} (${u.email}) ? Cette action est irréversible.`)) {
-      deleteUser(u.id);
-    }
+    confirm({
+      title: 'Supprimer l\'utilisateur',
+      message: `Êtes-vous sûr de vouloir supprimer l'utilisateur ${u.name} (${u.email}) ? Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      onConfirm: () => deleteUser(u.id)
+    });
   };
 
   const getServiceName = (id?: string) => {
