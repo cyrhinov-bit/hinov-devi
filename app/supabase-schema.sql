@@ -88,6 +88,7 @@ CREATE TABLE quote_lines (
     description TEXT NOT NULL,
     quantity INTEGER NOT NULL,
     unit_price NUMERIC NOT NULL,
+    discount_percent NUMERIC DEFAULT 0,
     total NUMERIC NOT NULL
 );
 

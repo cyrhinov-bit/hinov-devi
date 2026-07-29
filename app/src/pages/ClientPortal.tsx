@@ -141,6 +141,7 @@ export function ClientPortal() {
                   <th>Description</th>
                   <th>Qté</th>
                   <th>Prix Unitaire</th>
+                  <th>Remise</th>
                   <th>Total</th>
                 </tr>
               </thead>
@@ -152,6 +153,7 @@ export function ClientPortal() {
                     </td>
                     <td>{line.quantity}</td>
                     <td>{line.unitPrice.toLocaleString('fr-FR')} FCFA</td>
+                    <td>{line.discountPercent && line.discountPercent > 0 ? `-${line.discountPercent}%` : '-'}</td>
                     <td>{line.total.toLocaleString('fr-FR')} FCFA</td>
                   </tr>
                 ))}

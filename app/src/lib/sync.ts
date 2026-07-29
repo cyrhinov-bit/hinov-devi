@@ -90,6 +90,7 @@ export const processSyncQueue = async () => {
               description: l.description,
               quantity: l.quantity,
               unit_price: l.unitPrice,
+              discount_percent: l.discountPercent || 0,
               total: l.total
             }));
             await supabase.from('quote_lines').insert(linesData);
@@ -127,6 +128,7 @@ export const processSyncQueue = async () => {
                 description: l.description,
                 quantity: l.quantity,
                 unit_price: l.unitPrice,
+                discount_percent: l.discountPercent || 0,
                 total: l.total
               }));
               await supabase.from('quote_lines').insert(linesData);

@@ -19,7 +19,7 @@ export function QuoteCreation() {
   const [lines, setLines] = useState<Omit<QuoteLine, 'id'>[]>([]);
 
   const handleAddLine = () => {
-    setLines([...lines, { prestationId: '', description: '', quantity: 1, unitPrice: 0, total: 0 }]);
+    setLines([...lines, { prestationId: '', description: '', quantity: 1, unitPrice: 0, discountPercent: 0, total: 0 }]);
   };
 
   const handleRemoveLine = (index: number) => {
@@ -41,7 +41,9 @@ export function QuoteCreation() {
       }
     }
 
-    line.total = line.quantity * line.unitPrice;
+    const rawTotal = line.quantity * line.unitPrice;
+    const lineDiscount = Math.round((rawTotal * (line.discountPercent || 0)) / 100);
+    line.total = Math.max(0, rawTotal - lineDiscount);
     newLines[index] = line;
     setLines(newLines);
   };
@@ -126,10 +128,11 @@ export function QuoteCreation() {
               <tr>
                 <th>Service (Catalogue)</th>
                 <th>Description</th>
-                <th style={{ width: '100px' }}>Qté</th>
-                <th style={{ width: '150px' }}>Prix Unitaire</th>
-                <th style={{ width: '150px' }}>Total</th>
-                <th style={{ width: '50px' }}></th>
+                <th style={{ width: '90px' }}>Qté</th>
+                <th style={{ width: '130px' }}>Prix Unitaire</th>
+                <th style={{ width: '100px' }}>Remise (%)</th>
+                <th style={{ width: '140px' }}>Total Net</th>
+                <th style={{ width: '40px' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -150,7 +153,15 @@ export function QuoteCreation() {
                   <td>
                     <input type="number" className="table-input" value={line.unitPrice} step="0.01" onChange={e => updateLine(idx, 'unitPrice', Number(e.target.value))} />
                   </td>
-                  <td>{line.total.toLocaleString('fr-FR')} FCFA</td>
+                  <td>
+                    <input type="number" className="table-input" value={line.discountPercent || ''} min="0" max="100" placeholder="0%" onChange={e => updateLine(idx, 'discountPercent', Math.min(100, Math.max(0, Number(e.target.value))))} />
+                  </td>
+                  <td>
+                    <strong>{line.total.toLocaleString('fr-FR')} FCFA</strong>
+                    {line.discountPercent && line.discountPercent > 0 ? (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-secondary)' }}>(-{line.discountPercent}%)</div>
+                    ) : null}
+                  </td>
                   <td>
                     <button className="icon-button text-error" onClick={() => handleRemoveLine(idx)}><Trash2 size={16} /></button>
                   </td>
@@ -158,7 +169,7 @@ export function QuoteCreation() {
               ))}
               {lines.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '16px', color: 'var(--color-text-muted)' }}>Aucune ligne. Cliquez sur "Ajouter une ligne" pour commencer.</td>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '16px', color: 'var(--color-text-muted)' }}>Aucune ligne. Cliquez sur "Ajouter une ligne" pour commencer.</td>
                 </tr>
               )}
             </tbody>
