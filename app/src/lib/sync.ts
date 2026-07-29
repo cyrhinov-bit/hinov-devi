@@ -153,6 +153,7 @@ export const processSyncQueue = async () => {
             header_logo_base64: action.payload.headerLogoBase64 ?? null,
             default_vat: action.payload.defaultVat ?? null,
             default_validity: action.payload.defaultValidity ?? null,
+            site_url: action.payload.siteUrl ?? null,
           }).eq('id', 1);
           if (error) console.error('[Sync] UPDATE_SETTINGS échoué :', error.message);
           success = !error;

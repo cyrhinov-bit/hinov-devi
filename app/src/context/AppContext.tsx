@@ -12,7 +12,7 @@ export interface Service { id: string; name: string; description: string; member
 export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; unit?: string; }
 export interface QuoteLine { id: string; prestationId: string; description: string; quantity: number; unitPrice: number; total: number; discountPercent?: number; }
 export interface Quote { id: string; quoteNumber: string; clientId: string; commercialId: string; subject: string; lines: QuoteLine[]; subtotal: number; vat: number; total: number; status: 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé'; date: string; style?: 'Classique' | 'Moderne' | 'Minimaliste'; accentColor?: string; discountPercent?: number; discountAmount?: number; }
-export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; defaultVat?: number; defaultValidity?: number; }
+export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; defaultVat?: number; defaultValidity?: number; siteUrl?: string; }
 
 interface AppState {
   users: User[]; clients: Client[]; quotes: Quote[]; settings: AppSettings; services: Service[]; prestations: Prestation[]; loading: boolean;
@@ -117,6 +117,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             headerLogoBase64: settingsData.header_logo_base64 ?? undefined,
             defaultVat: settingsData.default_vat ?? undefined,
             defaultValidity: settingsData.default_validity ?? undefined,
+            siteUrl: settingsData.site_url ?? undefined,
           };
           setSettings(parsedSettings); await db.settings.setItem('data', parsedSettings);
         }

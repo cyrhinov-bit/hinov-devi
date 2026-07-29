@@ -35,7 +35,8 @@ export function formatWhatsAppPhone(phone: string): string {
 export function generateEmailContent(quote: Quote, client?: Client, settings?: AppSettings) {
   const company = settings?.companyName || 'Notre Entreprise';
   const clientName = client?.contact || client?.name || 'Client';
-  const portalUrl = `${window.location.origin}/portail-client/${quote.id}`;
+  const baseUrl = settings?.siteUrl?.trim() ? settings.siteUrl.replace(/\/$/, '') : window.location.origin;
+  const portalUrl = `${baseUrl}/portail-client/${quote.id}`;
   
   const emailSubject = `Devis N° ${quote.quoteNumber} - ${quote.subject || company}`;
   const emailBody = `Bonjour ${clientName},\n\n` +
@@ -63,7 +64,8 @@ export function generateWhatsAppLink(quote: Quote, client?: Client, settings?: A
 
   const company = settings?.companyName || 'Notre Entreprise';
   const clientName = client?.contact || client?.name || 'Client';
-  const portalUrl = `${window.location.origin}/portail-client/${quote.id}`;
+  const baseUrl = settings?.siteUrl?.trim() ? settings.siteUrl.replace(/\/$/, '') : window.location.origin;
+  const portalUrl = `${baseUrl}/portail-client/${quote.id}`;
   
   const message = `Bonjour ${clientName},\n\nVoici le lien sécurisé vers votre devis N° ${quote.quoteNumber} (Montant : ${quote.total.toLocaleString('fr-FR')} FCFA) :\n${portalUrl}\n\nMerci de votre confiance.`;
   

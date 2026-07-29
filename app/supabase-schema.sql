@@ -58,7 +58,8 @@ CREATE TABLE settings (
     default_terms TEXT,
     header_logo_base64 TEXT,
     default_vat NUMERIC DEFAULT 20,
-    default_validity INTEGER DEFAULT 30
+    default_validity INTEGER DEFAULT 30,
+    site_url TEXT
 );
 
 -- Table des devis

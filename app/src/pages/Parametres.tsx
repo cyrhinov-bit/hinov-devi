@@ -87,6 +87,19 @@ export function Parametres() {
               <input type="number" className="table-input" value={localSettings.defaultValidity} onChange={e => setLocalSettings({...localSettings, defaultValidity: Number(e.target.value)})} />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label>URL du site / Domaine personnalisé pour les liens de devis</label>
+              <input
+                type="url"
+                className="table-input"
+                placeholder="Ex: https://devis.votre-entreprise.com"
+                value={localSettings.siteUrl || ''}
+                onChange={e => setLocalSettings({ ...localSettings, siteUrl: e.target.value })}
+              />
+              <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                Laisser vide pour utiliser automatiquement l'URL courante de votre navigateur.
+              </p>
+            </div>
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label>Mentions légales par défaut</label>
               <textarea className="table-input" rows={4} value={localSettings.defaultTerms} onChange={e => setLocalSettings({...localSettings, defaultTerms: e.target.value})} />
             </div>
