@@ -54,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: data.role as 'Directeur' | 'Responsable',
         serviceId: data.service_id,
         pin: data.pin,
-        lastLogin: data.last_login
+        lastLogin: data.last_login,
+        active: data.active !== false
       });
     }
     setLoading(false);

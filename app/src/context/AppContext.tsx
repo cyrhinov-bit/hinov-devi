@@ -278,6 +278,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       serviceId: result.serviceId,
       pin: user.pin,
       lastLogin: 'Jamais',
+      active: true,
     };
     const newUsers = [...users, newUser];
     setUsers(newUsers);
