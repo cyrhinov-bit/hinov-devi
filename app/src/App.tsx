@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { DashboardDirecteur } from './pages/DashboardDirecteur';
 import { DashboardResponsable } from './pages/DashboardResponsable';
-import { DashboardCommercial } from './pages/DashboardCommercial';
 import { QuoteCreation } from './pages/QuoteCreation';
 import { ClientPortal } from './pages/ClientPortal';
 
@@ -51,8 +50,8 @@ function RoleBasedDashboard() {
   if (currentUser.role === 'Directeur') return <DashboardDirecteur />;
   if (currentUser.role === 'Responsable') return <DashboardResponsable />;
   
-  // Par défaut, si jamais il y a un autre rôle, on renvoie le dashboard commercial ou directeur
-  return <DashboardCommercial />;
+  // Seuls les rôles Directeur et Responsable existent
+  return <DashboardDirecteur />;
 }
 
 function App() {

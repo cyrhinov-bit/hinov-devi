@@ -27,11 +27,11 @@ export function Rapports() {
       </div>
       
       <div className="card">
-        <h3>Performance des commerciaux</h3>
+        <h3>Performance des responsables</h3>
         <table className="data-table">
           <thead>
             <tr>
-              <th>Commercial</th>
+              <th>Responsable</th>
               <th>Devis émis</th>
               <th>Acceptés</th>
               <th>Taux Conv.</th>

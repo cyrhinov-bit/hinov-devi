@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Save, Upload } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -57,11 +57,11 @@ export function Parametres() {
             </div>
             <div className="form-group">
               <label>SIRET</label>
-              <input type="text" className="table-input" value={localSettings.siret} onChange={e => setLocalSettings({...localSettings, siret: e.target.value})} />
+              <input type="text" className="table-input" value={localSettings.companySiret} onChange={e => setLocalSettings({...localSettings, companySiret: e.target.value})} />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label>Adresse siège social</label>
-              <input type="text" className="table-input" value={localSettings.address} onChange={e => setLocalSettings({...localSettings, address: e.target.value})} />
+              <input type="text" className="table-input" value={localSettings.companyAddress} onChange={e => setLocalSettings({...localSettings, companyAddress: e.target.value})} />
             </div>
           </div>
         </section>

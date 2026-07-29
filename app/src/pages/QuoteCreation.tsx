@@ -59,25 +59,27 @@ export function QuoteCreation() {
       return;
     }
 
-    const newId = Date.now().toString();
+    const newId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+    const now = new Date();
+    const seq = (now.getTime() % 10000).toString().padStart(4, '0');
     const newQuote = {
       id: newId,
-      quoteNumber: `DV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+      quoteNumber: `DV-${now.getFullYear()}-${seq}`,
       clientId,
-      commercialId: 'current-user',
+      commercialId: currentUser?.id || '',
       subject,
-      lines: lines.map((l, i) => ({ ...l, id: Date.now().toString() + i })),
+      lines: lines.map((l) => ({ ...l, id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() })),
       subtotal,
       vat,
       total,
       status,
-      date: new Date().toISOString().split('T')[0],
+      date: now.toISOString().split('T')[0],
       style,
       accentColor
     };
 
     addQuote(newQuote);
-    
+
     if (preview) {
       navigate(`/portail-client/${newId}`);
     } else {

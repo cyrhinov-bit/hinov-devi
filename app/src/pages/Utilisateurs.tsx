@@ -41,7 +41,6 @@ export function Utilisateurs() {
     switch (role) {
       case 'Directeur': return 'var(--color-error)';
       case 'Responsable': return '#2196F3';
-      case 'Commercial': return '#9C27B0';
       default: return 'var(--color-text-muted)';
     }
   };
@@ -70,7 +69,6 @@ export function Utilisateurs() {
             </div>
 
             <select className="table-input" required value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
-              <option value="Commercial">Commercial</option>
               <option value="Responsable">Responsable</option>
               <option value="Directeur">Directeur</option>
             </select>

@@ -12,7 +12,7 @@ export interface Service { id: string; name: string; description: string; member
 export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; unit?: string; }
 export interface QuoteLine { id: string; prestationId: string; description: string; quantity: number; unitPrice: number; total: number; }
 export interface Quote { id: string; quoteNumber: string; clientId: string; commercialId: string; subject: string; lines: QuoteLine[]; subtotal: number; vat: number; total: number; status: 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé'; date: string; style?: 'Classique' | 'Moderne' | 'Minimaliste'; accentColor?: string; }
-export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; address?: string; siret?: string; defaultVat?: number; defaultValidity?: number; }
+export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; defaultVat?: number; defaultValidity?: number; }
 
 interface AppState {
   users: User[]; clients: Client[]; quotes: Quote[]; settings: AppSettings; services: Service[]; prestations: Prestation[]; loading: boolean;
@@ -81,7 +81,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ]);
 
         if (profilesData) {
-          const parsedUsers = profilesData.map(p => ({ id: p.id, name: p.name, email: p.email, role: p.role, serviceId: p.service_id, pin: p.pin, lastLogin: p.last_login }));
+          const parsedUsers = profilesData.map(p => ({
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            role: p.role as User['role'],
+            serviceId: p.service_id,
+            pin: p.pin,
+            lastLogin: p.last_login
+          }));
           setUsers(parsedUsers); await db.profiles.setItem('data', parsedUsers);
         }
         if (clientsData) {
@@ -216,21 +224,51 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await queueSyncAction('DELETE_SERVICE', { id });
   };
 
-  // Auth Users must generally be online to create accounts, so we hit Supabase immediately
+  // Création d'utilisateur via Edge Function (service_role) pour ne pas écraser la session du Directeur
   const addUser = async (user: User) => {
     if (!navigator.onLine) { alert("Vous devez être en ligne pour créer un utilisateur."); return; }
-    const { data, error } = await supabase.auth.signUp({ email: user.email, password: user.pin });
-    if (error || !data.user) return;
-    
-    const newProfile = { id: data.user.id, name: user.name, email: user.email, role: user.role, service_id: user.serviceId || null, pin: user.pin, last_login: 'Jamais' };
-    const { data: profileData } = await supabase.from('profiles').insert([newProfile]).select().single();
-    
-    if (profileData) {
-      const newUser = { id: profileData.id, name: profileData.name, email: profileData.email, role: profileData.role, serviceId: profileData.service_id, pin: profileData.pin, lastLogin: profileData.last_login };
-      const newUsers = [...users, newUser];
-      setUsers(newUsers);
-      await db.profiles.setItem('data', newUsers);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { alert('Session expirée. Veuillez vous reconnecter.'); return; }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          pin: user.pin,
+          name: user.name,
+          role: user.role,
+          serviceId: user.serviceId || null,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(`Erreur : ${result.error || 'Impossible de créer l\'utilisateur.'}`);
+      return;
     }
+
+    // Ajouter le nouvel utilisateur à l'état local et au cache
+    const newUser: User = {
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      role: result.role,
+      serviceId: result.serviceId,
+      pin: user.pin,
+      lastLogin: 'Jamais',
+    };
+    const newUsers = [...users, newUser];
+    setUsers(newUsers);
+    await db.profiles.setItem('data', newUsers);
   };
 
   const deleteUser = async (id: string) => {

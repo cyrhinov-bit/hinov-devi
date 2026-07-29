@@ -20,12 +20,14 @@ export function ClientPortal() {
 
   const handleStatusChange = (status: 'Accepté' | 'Refusé' | 'Brouillon' | 'Envoyé') => {
     updateQuoteStatus(quote.id, status);
-    if (status !== 'Envoyé') navigate('/');
+    // Ne rediriger que si l'utilisateur est un employé connecté (pas un client externe)
+    if (currentUser && status !== 'Envoyé') navigate('/devis');
   };
 
   const handleSend = () => {
     updateQuoteStatus(quote.id, 'Envoyé');
-    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client généré :\nhttp://localhost:5173/portail-client/${quote.id}`);
+    const portalUrl = `${window.location.origin}/portail-client/${quote.id}`;
+    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client :\n${portalUrl}`);
   };
 
   const handleSendWhatsapp = () => {
@@ -34,7 +36,7 @@ export function ClientPortal() {
       return;
     }
     updateQuoteStatus(quote.id, 'Envoyé');
-    const link = `http://localhost:5173/portail-client/${quote.id}`;
+    const link = `${window.location.origin}/portail-client/${quote.id}`;
     const message = `Bonjour ${client.contact || client.name},\n\nVoici le lien vers votre devis : ${link}\n\nMerci de votre confiance.`;
     
     let phoneStr = client.phone.replace(/[^0-9+]/g, '');
@@ -95,8 +97,8 @@ export function ClientPortal() {
                 <img src={settings.headerLogoBase64} alt={settings.companyName} style={{ maxWidth: '200px', maxHeight: '80px', marginBottom: '16px', objectFit: 'contain' }} />
               )}
               {!settings.headerLogoBase64 && <h2>{settings.companyName}</h2>}
-              <p>{settings.address}</p>
-              <p>SIRET: {settings.siret}</p>
+              <p>{settings.companyAddress}</p>
+              <p>SIRET: {settings.companySiret}</p>
             </div>
             <div className="client-info">
               <h3>Devis N° {quote.quoteNumber}</h3>

@@ -62,7 +62,7 @@ export function DashboardResponsable() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Commercial</th>
+              <th>Responsable</th>
               <th>Devis Créés</th>
               <th>Devis Acceptés</th>
               <th>Valeur Totale</th>

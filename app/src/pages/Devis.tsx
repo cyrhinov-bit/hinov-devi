@@ -38,7 +38,8 @@ export function Devis() {
 
   const handleSend = (id: string) => {
     updateQuoteStatus(id, 'Envoyé');
-    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client généré :\nhttp://localhost:5173/portail-client/${id}`);
+    const portalUrl = `${window.location.origin}/portail-client/${id}`;
+    alert(`Devis envoyé au client avec succès par e-mail !\n\nLien du portail client :\n${portalUrl}`);
   };
 
   const handleSendWhatsapp = (id: string, clientId: string) => {
@@ -49,7 +50,7 @@ export function Devis() {
     }
     
     updateQuoteStatus(id, 'Envoyé');
-    const link = `http://localhost:5173/portail-client/${id}`;
+    const link = `${window.location.origin}/portail-client/${id}`;
     const message = `Bonjour ${client.contact || client.name},\n\nVoici le lien vers votre devis : ${link}\n\nMerci de votre confiance.`;
     
     // Formater le numéro pour l'URL WhatsApp (garder uniquement les chiffres)

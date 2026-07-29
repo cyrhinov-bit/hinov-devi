@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, Users, Briefcase, FileText, Folder, Shield, PieChart, Settings, UserCircle, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +14,7 @@ export function Sidebar() {
     navigate('/login');
   };
 
-  const navItems = [
+  const navItems: { label: string; icon: React.ElementType; path: string; roles: Array<'Directeur' | 'Responsable'> }[] = [
     { label: 'Dashboard', icon: Home, path: '/', roles: ['Directeur', 'Responsable'] },
     { label: 'Clients', icon: Users, path: '/clients', roles: ['Directeur', 'Responsable'] },
     { label: 'Services', icon: Briefcase, path: '/services', roles: ['Directeur'] },
