@@ -75,6 +75,8 @@ CREATE TABLE quotes (
     date DATE NOT NULL,
     style TEXT DEFAULT 'Classique',
     accent_color TEXT,
+    discount_percent NUMERIC DEFAULT 0,
+    discount_amount NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 

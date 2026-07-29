@@ -155,12 +155,25 @@ export function ClientPortal() {
               </p>
             </div>
             <div className="totals">
+              {quote.discountPercent && quote.discountPercent > 0 ? (
+                <>
+                  <div className="total-row">
+                    <span>Remise ({quote.discountPercent}%)</span>
+                    <span>-{quote.discountAmount?.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                  <div className="total-row">
+                    <span>Sous-total Net HT</span>
+                    <span>{quote.subtotal.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                </>
+              ) : (
+                <div className="total-row">
+                  <span>Sous-total HT</span>
+                  <span>{quote.subtotal.toLocaleString('fr-FR')} FCFA</span>
+                </div>
+              )}
               <div className="total-row">
-                <span>Sous-total HT</span>
-                <span>{quote.subtotal.toLocaleString('fr-FR')} FCFA</span>
-              </div>
-              <div className="total-row">
-                <span>TVA (20%)</span>
+                <span>TVA ({settings.defaultVat !== undefined ? settings.defaultVat : 20}%)</span>
                 <span>{quote.vat.toLocaleString('fr-FR')} FCFA</span>
               </div>
               <div className="total-row grand-total">

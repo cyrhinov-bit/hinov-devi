@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Save, FileText, Trash2 } from 'lucide-react';
+import { Plus, Save, FileText, Trash2, Percent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,13 +8,14 @@ import './QuoteCreation.css';
 
 export function QuoteCreation() {
   const navigate = useNavigate();
-  const { clients, prestations, addQuote } = useAppContext();
+  const { clients, prestations, settings, addQuote } = useAppContext();
   const { currentUser } = useAuth();
 
   const [clientId, setClientId] = useState('');
   const [subject, setSubject] = useState('');
   const [style, setStyle] = useState<'Classique' | 'Moderne' | 'Minimaliste'>('Classique');
   const [accentColor, setAccentColor] = useState('#009688');
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [lines, setLines] = useState<Omit<QuoteLine, 'id'>[]>([]);
 
   const handleAddLine = () => {
@@ -49,9 +50,14 @@ export function QuoteCreation() {
     ? prestations
     : prestations.filter(p => p.serviceId === currentUser?.serviceId);
 
-  const subtotal = lines.reduce((acc, line) => acc + line.total, 0);
-  const vat = subtotal * 0.20;
-  const total = subtotal + vat;
+  // Calculations
+  const grossSubtotal = lines.reduce((acc, line) => acc + line.total, 0);
+  const discountAmount = Math.round((grossSubtotal * (discountPercent || 0)) / 100);
+  const netSubtotal = Math.max(0, grossSubtotal - discountAmount);
+  
+  const vatRate = (settings.defaultVat !== undefined ? settings.defaultVat : 20) / 100;
+  const vat = Math.round(netSubtotal * vatRate);
+  const total = netSubtotal + vat;
 
   const handleSave = (status: 'Brouillon' | 'Envoyé', preview: boolean = false) => {
     if (!clientId) {
@@ -69,7 +75,9 @@ export function QuoteCreation() {
       commercialId: currentUser?.id || '',
       subject,
       lines: lines.map((l) => ({ ...l, id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() })),
-      subtotal,
+      subtotal: netSubtotal,
+      discountPercent: discountPercent || 0,
+      discountAmount,
       vat,
       total,
       status,
@@ -98,10 +106,10 @@ export function QuoteCreation() {
           <h3>Informations Générales</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label>Client</label>
+              <label>Client *</label>
               <select className="form-control" value={clientId} onChange={e => setClientId(e.target.value)}>
                 <option value="">Sélectionner un client...</option>
-                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name || c.contact}</option>)}
               </select>
             </div>
             <div className="form-group">
@@ -161,6 +169,37 @@ export function QuoteCreation() {
         </section>
 
         <section className="form-section">
+          <h3>Remise & Réduction</h3>
+          <div className="form-grid" style={{ gridTemplateColumns: '1fr 2fr' }}>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Percent size={16} color="var(--color-primary)" /> Réduction (%)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                className="form-control"
+                placeholder="Ex: 10"
+                value={discountPercent || ''}
+                onChange={e => {
+                  const val = Math.min(100, Math.max(0, Number(e.target.value)));
+                  setDiscountPercent(val);
+                }}
+              />
+            </div>
+            {discountPercent > 0 && (
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', paddingTop: '24px' }}>
+                <span style={{ fontSize: '0.9rem', color: 'var(--color-secondary)', fontWeight: 500 }}>
+                  Montant de la remise accordée : <strong>-{discountAmount.toLocaleString('fr-FR')} FCFA</strong> ({discountPercent}%)
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="form-section">
           <h3>Paramètres de design</h3>
           <div className="form-grid">
             <div className="form-group">
@@ -186,11 +225,21 @@ export function QuoteCreation() {
 
         <div className="totals-section">
           <div className="total-row">
-            <span>Sous-total HT</span>
-            <span>{subtotal.toLocaleString('fr-FR')} FCFA</span>
+            <span>Montant Brut HT</span>
+            <span>{grossSubtotal.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          {discountPercent > 0 && (
+            <div className="total-row" style={{ color: 'var(--color-secondary)' }}>
+              <span>Remise ({discountPercent}%)</span>
+              <span>-{discountAmount.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+          )}
+          <div className="total-row" style={{ fontWeight: discountPercent > 0 ? 600 : 'normal' }}>
+            <span>Sous-total Net HT</span>
+            <span>{netSubtotal.toLocaleString('fr-FR')} FCFA</span>
           </div>
           <div className="total-row">
-            <span>TVA (20%)</span>
+            <span>TVA ({settings.defaultVat !== undefined ? settings.defaultVat : 20}%)</span>
             <span>{vat.toLocaleString('fr-FR')} FCFA</span>
           </div>
           <div className="total-row grand-total">

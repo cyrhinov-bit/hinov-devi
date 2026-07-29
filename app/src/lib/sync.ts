@@ -77,7 +77,9 @@ export const processSyncQueue = async () => {
             status: quoteData.status,
             date: quoteData.date,
             style: quoteData.style,
-            accent_color: quoteData.accentColor
+            accent_color: quoteData.accentColor,
+            discount_percent: quoteData.discountPercent || 0,
+            discount_amount: quoteData.discountAmount || 0
           }]);
           
           if (!error && lines && lines.length > 0) {
@@ -110,7 +112,9 @@ export const processSyncQueue = async () => {
             status: quoteData.status,
             date: quoteData.date,
             style: quoteData.style,
-            accent_color: quoteData.accentColor
+            accent_color: quoteData.accentColor,
+            discount_percent: quoteData.discountPercent || 0,
+            discount_amount: quoteData.discountAmount || 0
           }).eq('id', quoteData.id);
 
           if (!error) {
