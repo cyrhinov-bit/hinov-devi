@@ -108,6 +108,7 @@
   background: linear-gradient(270deg, var(--color-primary), #00b4d8, var(--color-primary));
   background-size: 200% 200%;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradientShift 4s ease infinite;
   font-weight: 700;

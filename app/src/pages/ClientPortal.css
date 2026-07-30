@@ -236,9 +236,8 @@
   border-bottom: 2px solid #333;
 }
 
-.style-classique {
-  /* Default Material Design styles defined in index.css */
-}
+/* .style-classique uses default Material Design styles defined in index.css */
+
 
 /* --- Admin Toolbar --- */
 .admin-preview-toolbar {

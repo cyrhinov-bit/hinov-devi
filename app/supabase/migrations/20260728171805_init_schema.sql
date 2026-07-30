@@ -19,7 +19,8 @@ CREATE TABLE profiles (
     role TEXT NOT NULL CHECK (role IN ('Directeur', 'Responsable')),
     service_id UUID REFERENCES services(id) ON DELETE SET NULL,
     pin TEXT NOT NULL,
-    last_login TEXT DEFAULT 'Jamais'
+    last_login TEXT DEFAULT 'Jamais',
+    active BOOLEAN DEFAULT true
 );
 
 -- Table des clients
