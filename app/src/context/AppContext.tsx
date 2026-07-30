@@ -11,7 +11,7 @@ export interface Client { id: string; name: string; email: string; phone: string
 export interface Service { id: string; name: string; description: string; members?: number; }
 export interface Prestation { id: string; code: string; name: string; description: string; price: number; serviceId: string; unit?: string; }
 export interface QuoteLine { id: string; prestationId: string; description: string; quantity: number; unitPrice: number; total: number; discountPercent?: number; }
-export interface Quote { id: string; quoteNumber: string; clientId: string; commercialId: string; subject: string; lines: QuoteLine[]; subtotal: number; vat: number; total: number; status: 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé'; date: string; style?: 'Classique' | 'Moderne' | 'Minimaliste'; accentColor?: string; discountPercent?: number; discountAmount?: number; }
+export interface Quote { id: string; quoteNumber: string; clientId: string; commercialId: string; subject: string; lines: QuoteLine[]; subtotal: number; vat: number; total: number; status: 'Brouillon' | 'Envoyé' | 'Accepté' | 'Refusé' | 'Révision'; date: string; style?: 'Classique' | 'Moderne' | 'Minimaliste'; accentColor?: string; discountPercent?: number; discountAmount?: number; clientComment?: string; }
 export interface AppSettings { companyName: string; companyLogo: string; companyAddress: string; companySiret: string; companyTva: string; defaultTerms: string; headerLogoBase64?: string; defaultVat?: number; defaultValidity?: number; siteUrl?: string; }
 
 interface AppState {
@@ -21,7 +21,7 @@ interface AppState {
   deleteClient: (id: string) => Promise<void>;
   addQuote: (quote: Quote) => Promise<void>;
   updateQuote: (id: string, quote: Quote) => Promise<void>;
-  updateQuoteStatus: (id: string, status: Quote['status']) => Promise<void>;
+  updateQuoteStatus: (id: string, status: Quote['status'], clientComment?: string) => Promise<void>;
   deleteQuote: (id: string) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<void>;
   addUser: (user: User) => Promise<void>;
@@ -124,7 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (quotesData) {
           const parsedQuotes = quotesData.map(q => ({
             id: q.id, quoteNumber: q.quote_number, clientId: q.client_id, commercialId: q.commercial_id, subject: q.subject, subtotal: q.subtotal, vat: q.vat, total: q.total, status: q.status, date: q.date, style: q.style, accentColor: q.accent_color,
-            discountPercent: q.discount_percent || 0, discountAmount: q.discount_amount || 0,
+            discountPercent: q.discount_percent || 0, discountAmount: q.discount_amount || 0, clientComment: q.client_comment,
             lines: q.quote_lines.map((l: any) => ({ id: l.id, prestationId: l.prestation_id, description: l.description, quantity: l.quantity, unitPrice: l.unit_price, total: l.total, discountPercent: l.discount_percent || 0 }))
           }));
           setQuotes(parsedQuotes); await db.quotes.setItem('data', parsedQuotes);
@@ -189,10 +189,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await queueSyncAction('UPDATE_QUOTE', newQuote);
   };
 
-  const updateQuoteStatus = async (id: string, status: Quote['status']) => {
+  const updateQuoteStatus = async (id: string, status: Quote['status'], clientComment?: string) => {
     const quote = quotes.find(q => q.id === id);
     if (!quote) return;
-    const newQuote = { ...quote, status };
+    const newQuote = { ...quote, status, ...(clientComment !== undefined && { clientComment }) };
     const newQuotes = quotes.map(q => q.id === id ? newQuote : q);
     setQuotes(newQuotes);
     await db.quotes.setItem('data', newQuotes);

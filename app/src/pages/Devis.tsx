@@ -34,6 +34,7 @@ export function Devis() {
     switch (status) {
       case 'Accepté': return 'bg-success';
       case 'Refusé': return 'bg-error';
+      case 'Révision': return 'bg-warning';
       case 'Envoyé': return 'bg-primary';
       case 'Brouillon': return 'bg-secondary';
       default: return '';
@@ -84,6 +85,7 @@ export function Devis() {
             <option value="Brouillon">Brouillon</option>
             <option value="Envoyé">Envoyé</option>
             <option value="Accepté">Accepté</option>
+            <option value="Révision">Révision</option>
             <option value="Refusé">Refusé</option>
           </select>
         </div>
@@ -107,7 +109,12 @@ export function Devis() {
                 <td>{getClientName(q.clientId)}</td>
                 <td>{q.subject}</td>
                 <td>{q.subtotal.toLocaleString('fr-FR')} FCFA</td>
-                <td><span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span></td>
+                <td>
+                  <span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span>
+                  {q.clientComment && (
+                    <MessageCircle size={14} style={{ marginLeft: '6px', color: 'var(--color-primary)', verticalAlign: 'middle' }} title={`Commentaire : ${q.clientComment}`} />
+                  )}
+                </td>
                 <td>{q.date}</td>
                 <td>
                   <button className="icon-button" style={{ color: 'var(--color-primary)' }} onClick={() => handleSend(q)} title="Envoyer par E-mail">

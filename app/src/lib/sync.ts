@@ -79,7 +79,8 @@ export const processSyncQueue = async () => {
             style: quoteData.style,
             accent_color: quoteData.accentColor,
             discount_percent: quoteData.discountPercent || 0,
-            discount_amount: quoteData.discountAmount || 0
+            discount_amount: quoteData.discountAmount || 0,
+            client_comment: quoteData.clientComment || null
           }]);
           
           if (!error && lines && lines.length > 0) {
@@ -115,7 +116,8 @@ export const processSyncQueue = async () => {
             style: quoteData.style,
             accent_color: quoteData.accentColor,
             discount_percent: quoteData.discountPercent || 0,
-            discount_amount: quoteData.discountAmount || 0
+            discount_amount: quoteData.discountAmount || 0,
+            client_comment: quoteData.clientComment !== undefined ? quoteData.clientComment : null
           }).eq('id', quoteData.id);
 
           if (!error) {

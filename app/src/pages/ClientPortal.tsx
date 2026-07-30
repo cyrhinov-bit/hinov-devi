@@ -14,7 +14,10 @@ export function ClientPortal() {
   const { quotes, clients, settings, updateQuoteStatus } = useAppContext();
   const { currentUser } = useAuth();
   const { confirm } = useConfirm();
+  const { confirm } = useConfirm();
   const [showSendModal, setShowSendModal] = useState(false);
+  const [feedbackMode, setFeedbackMode] = useState<'Révision' | 'Refusé' | null>(null);
+  const [clientComment, setClientComment] = useState('');
 
   const quote = quotes.find(q => q.id === id);
 
@@ -24,17 +27,17 @@ export function ClientPortal() {
 
   const client = clients.find(c => c.id === quote.clientId);
 
-  const handleStatusChange = (status: 'Accepté' | 'Refusé' | 'Brouillon' | 'Envoyé') => {
+  const handleStatusChange = (status: 'Accepté' | 'Refusé' | 'Brouillon' | 'Envoyé' | 'Révision') => {
     const isAccept = status === 'Accepté';
     confirm({
-      title: isAccept ? 'Accepter le devis' : 'Refuser le devis',
+      title: isAccept ? 'Accepter le devis' : 'Confirmer l\'action',
       message: isAccept
         ? 'Confirmez-vous l\'acceptation de ce devis ? Cette décision sera transmise immédiatement au prestataire.'
-        : 'Êtes-vous sûr de vouloir refuser ce devis ?',
-      confirmLabel: isAccept ? 'Accepter le devis' : 'Refuser le devis',
-      variant: isAccept ? 'success' : 'danger',
+        : 'Êtes-vous sûr ?',
+      confirmLabel: isAccept ? 'Accepter le devis' : 'Confirmer',
+      variant: isAccept ? 'success' : 'warning',
       onConfirm: async () => {
-        await updateQuoteStatus(quote.id, status);
+        await updateQuoteStatus(quote.id, status, clientComment);
         if (currentUser && status !== 'Envoyé') navigate('/devis');
       }
     });
@@ -210,22 +213,61 @@ export function ClientPortal() {
           </div>
         </div>
 
-        {quote.status !== 'Accepté' && quote.status !== 'Refusé' && (
+        {quote.status !== 'Accepté' && quote.status !== 'Refusé' && quote.status !== 'Révision' && (
           <div className="client-actions-section">
             <h3>Votre décision</h3>
-            <div className="action-buttons">
-              <button className="btn btn-success action-btn" onClick={() => handleStatusChange('Accepté')}>
-                <Check size={20} style={{ marginRight: '8px' }} />
-                Accepter le devis
-              </button>
-              <button className="btn btn-warning action-btn">
-                <AlertCircle size={20} style={{ marginRight: '8px' }} />
-                Demander une révision
-              </button>
-              <button className="btn btn-danger action-btn" onClick={() => handleStatusChange('Refusé')}>
-                <X size={20} style={{ marginRight: '8px' }} />
-                Refuser
-              </button>
+            {feedbackMode ? (
+              <div className="feedback-form" style={{ marginTop: '16px', padding: '24px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', textAlign: 'left' }}>
+                <h4 style={{ marginBottom: '16px', color: '#333' }}>
+                  {feedbackMode === 'Révision' ? 'Demander une révision' : 'Refuser le devis'}
+                </h4>
+                <textarea 
+                  value={clientComment}
+                  onChange={(e) => setClientComment(e.target.value)}
+                  placeholder={feedbackMode === 'Révision' ? "Précisez les modifications souhaitées (ex: retirer l'article 2, changer la quantité...)" : "Motif du refus (optionnel)..."}
+                  style={{ width: '100%', minHeight: '120px', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '16px', fontSize: '1rem', fontFamily: 'inherit' }}
+                />
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary" onClick={() => { setFeedbackMode(null); setClientComment(''); }}>Annuler</button>
+                  <button 
+                    className={`btn ${feedbackMode === 'Révision' ? 'btn-warning' : 'btn-danger'}`}
+                    onClick={() => {
+                      updateQuoteStatus(quote.id, feedbackMode, clientComment);
+                      setFeedbackMode(null);
+                      if (currentUser) navigate('/devis');
+                    }}
+                  >
+                    Confirmer
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="action-buttons">
+                <button className="btn btn-success action-btn" onClick={() => handleStatusChange('Accepté')}>
+                  <Check size={20} style={{ marginRight: '8px' }} />
+                  Accepter le devis
+                </button>
+                <button className="btn btn-warning action-btn" onClick={() => setFeedbackMode('Révision')}>
+                  <AlertCircle size={20} style={{ marginRight: '8px' }} />
+                  Demander une révision
+                </button>
+                <button className="btn btn-danger action-btn" onClick={() => setFeedbackMode('Refusé')}>
+                  <X size={20} style={{ marginRight: '8px' }} />
+                  Refuser
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {(quote.status === 'Refusé' || quote.status === 'Révision') && quote.clientComment && (
+          <div className="client-actions-section" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef', marginTop: '24px' }}>
+            <h3 style={{ color: quote.status === 'Refusé' ? 'var(--color-error)' : 'var(--color-warning)' }}>
+              {quote.status === 'Refusé' ? 'Devis refusé' : 'Révision demandée'}
+            </h3>
+            <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd', textAlign: 'left', whiteSpace: 'pre-line' }}>
+              <strong>Commentaire du client :</strong><br/><br/>
+              {quote.clientComment}
             </div>
           </div>
         )}
