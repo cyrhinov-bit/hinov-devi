@@ -14,7 +14,6 @@ export function ClientPortal() {
   const { quotes, clients, settings, updateQuoteStatus } = useAppContext();
   const { currentUser } = useAuth();
   const { confirm } = useConfirm();
-  const { confirm } = useConfirm();
   const [showSendModal, setShowSendModal] = useState(false);
   const [feedbackMode, setFeedbackMode] = useState<'Révision' | 'Refusé' | null>(null);
   const [clientComment, setClientComment] = useState('');

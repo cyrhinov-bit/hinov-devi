@@ -112,7 +112,9 @@ export function Devis() {
                 <td>
                   <span className={`badge-status ${getBadgeColor(q.status)}`}>{q.status}</span>
                   {q.clientComment && (
-                    <MessageCircle size={14} style={{ marginLeft: '6px', color: 'var(--color-primary)', verticalAlign: 'middle' }} title={`Commentaire : ${q.clientComment}`} />
+                    <span title={`Commentaire : ${q.clientComment}`}>
+                      <MessageCircle size={14} style={{ marginLeft: '6px', color: 'var(--color-primary)', verticalAlign: 'middle' }} />
+                    </span>
                   )}
                 </td>
                 <td>{q.date}</td>
