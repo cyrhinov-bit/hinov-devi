@@ -6,7 +6,7 @@ import type { User } from './AppContext';
 interface AuthState {
   currentUser: User | null;
   loading: boolean;
-  login: (email: string, pin: string) => Promise<boolean>;
+  login: (email: string, pin: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updatePin: (currentPin: string, newPin: string) => Promise<{ success: boolean; error?: string }>;
 }
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
-  const login = async (emailInput: string, pinInput: string) => {
+  const login = async (emailInput: string, pinInput: string): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
     const cleanEmail = emailInput.trim().toLowerCase();
     const cleanPin = pinInput.trim();
@@ -72,9 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     
     if (error || !data.user) {
-      if (error) console.error('[AuthContext] Connexion échouée :', error.message);
+      console.error('[AuthContext] Connexion échouée :', error?.message);
       setLoading(false);
-      return false;
+      return { success: false, error: error?.message || 'Utilisateur introuvable.' };
     }
     
     // Check active status
@@ -82,15 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (profile && profile.active === false) {
       await supabase.auth.signOut();
       setLoading(false);
-      alert('Votre compte a été désactivé par le Directeur.');
-      return false;
+      return { success: false, error: 'Votre compte a été désactivé par le Directeur.' };
     }
     
     // Update last_login
     await supabase.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', data.user.id);
     
     // fetchUserProfile is triggered by onAuthStateChange
-    return true;
+    return { success: true };
   };
 
   const logout = async () => {

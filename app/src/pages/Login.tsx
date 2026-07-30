@@ -12,7 +12,7 @@ export function Login() {
   
   const [email, setEmail] = useState('');
   const [pin, setPin] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -24,14 +24,14 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && pin) {
-      setError(false);
+      setError('');
       setIsSubmitting(true);
-      const success = await login(email.trim().toLowerCase(), pin.trim());
+      const result = await login(email.trim().toLowerCase(), pin.trim());
       setIsSubmitting(false);
-      if (success) {
+      if (result.success) {
         navigate('/', { replace: true });
       } else {
-        setError(true);
+        setError(result.error || 'Identifiants ou code PIN incorrects.');
         setPin('');
       }
     }
@@ -69,7 +69,7 @@ export function Login() {
 
         {error && (
           <div className="login-error">
-            Identifiants ou code PIN incorrects.
+            {error}
           </div>
         )}
 
